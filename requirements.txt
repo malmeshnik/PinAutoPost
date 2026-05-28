@@ -1,0 +1,7 @@
+Django>=5.0,<5.1
+djangorestframework
+curl_cffi
+python-dotenv
+psycopg2-binary
+requests
+gunicorn
