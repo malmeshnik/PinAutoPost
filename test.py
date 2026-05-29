@@ -9,7 +9,9 @@ headers = {
 }
 
 data = {
-    "image_url": "https://i.pinimg.com/1200x/b1/8f/c5/b18fc557d0364e43acbdc9f32d9fd70a.jpg",
+    "title": "Amazon Desk Setup Ideas",
+    "description": "Check out these amazing Amazon desk setup ideas to create a productive and stylish workspace.",
+    "image_url": "https://i.pinimg.com/736x/24/1d/94/241d9435d90279beadc1d47bafae85c7.jpg",
     "board_name": "Amazon Desk Setup Ideas"
 }
 

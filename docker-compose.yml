@@ -8,6 +8,10 @@ services:
       - POSTGRES_USER=${POSTGRES_USER:-pinterest_user}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-pinterest_pass}
 
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:-strong_redis_password}
+
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
@@ -17,7 +21,7 @@ services:
       - "8008:8000"
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - DJANGO_DEBUG=${DJANGO_DEBUG:-False}
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
       - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-*}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_ADMIN_CHAT_ID=${TELEGRAM_ADMIN_CHAT_ID}
@@ -26,8 +30,46 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-pinterest_db}
       - POSTGRES_USER=${POSTGRES_USER:-pinterest_user}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-pinterest_pass}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-strong_redis_password}@redis:6379/0
     depends_on:
       - db
+      - redis
+
+  worker:
+    build: .
+    command: celery -A pinterest_poster worker -l info
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-pinterest_db}
+      - POSTGRES_USER=${POSTGRES_USER:-pinterest_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-pinterest_pass}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-strong_redis_password}@redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+  beat:
+    build: .
+    command: celery -A pinterest_poster beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-pinterest_db}
+      - POSTGRES_USER=${POSTGRES_USER:-pinterest_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-pinterest_pass}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-strong_redis_password}@redis:6379/0
+    depends_on:
+      - db
+      - redis
 
 volumes:
   postgres_data:

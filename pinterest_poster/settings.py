@@ -13,6 +13,7 @@ DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '*').split(',')
 
 INSTALLED_APPS = [
+    'unfold',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -20,6 +21,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_celery_beat',
     'pinterest_app',
 ]
 
@@ -95,6 +97,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -110,3 +113,51 @@ REST_FRAMEWORK = {
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_ADMIN_CHAT_ID = os.getenv('TELEGRAM_ADMIN_CHAT_ID')
+
+# Celery Configuration
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', 'False') == 'True'
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'refresh-boards-daily': {
+        'task': 'pinterest_app.tasks.refresh_all_accounts_boards_task',
+        'schedule': crontab(hour=0, minute=0),
+    },
+}
+
+# Unfold Configuration
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
+
+UNFOLD = {
+    "SITE_TITLE": "PinAutoPost Admin",
+    "SITE_HEADER": "PinAutoPost",
+    "DASHBOARD": {
+        "template": "admin/dashboard.html",
+        "config": "pinterest_app.dashboard.dashboard_callback",
+        "navigation": [
+            {
+                "title": _("Dashboard"),
+                "link": reverse_lazy("admin:index"),
+                "icon": "dashboard",
+            },
+            {
+                "title": _("Accounts"),
+                "link": reverse_lazy("admin:pinterest_app_pinterestaccount_changelist"),
+                "icon": "person",
+            },
+            {
+                "title": _("Tasks"),
+                "link": reverse_lazy("admin:pinterest_app_pinpublishtask_changelist"),
+                "icon": "task",
+            },
+        ],
+    },
+}

@@ -2,9 +2,10 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import PinterestAccount, PinterestBoard
-from .serializers import PinterestAccountSerializer, PinterestBoardSerializer, PinPublishSerializer
-from .services import refresh_boards, create_pin, check_proxy
+from .models import PinterestAccount, PinterestBoard, PinPublishTask
+from .serializers import PinterestAccountSerializer, PinterestBoardSerializer, PinPublishSerializer, PinPublishTaskSerializer
+from .services import refresh_boards, check_proxy
+from .tasks import publish_pin_task
 
 class PinterestAccountViewSet(viewsets.ModelViewSet):
     serializer_class = PinterestAccountSerializer
@@ -23,19 +24,13 @@ class PinterestAccountViewSet(viewsets.ModelViewSet):
 
         account = serializer.save(user=self.request.user)
         # Initial boards refresh
-        success, message = refresh_boards(account)
-        if not success:
-            # If initial board refresh fails (e.g. auth error), we still created the account
-            # but it will be inactive. We can inform the user.
-            pass
+        refresh_boards(account)
 
     @action(detail=True, methods=['get'])
     def boards(self, request, pk=None):
         account = self.get_object()
         if request.query_params.get('refresh') == 'true':
-            success, message = refresh_boards(account)
-            if not success:
-                return Response({"error": message}, status=status.HTTP_502_BAD_GATEWAY)
+            refresh_boards(account)
 
         boards = account.boards.all()
         serializer = PinterestBoardSerializer(boards, many=True)
@@ -54,29 +49,49 @@ def publish_pin_webhook(request, webhook_token):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     data = serializer.validated_data
-    board_id = data.get('board_id')
-    board_name = data.get('board_name')
 
-    if not board_id and board_name:
-        board = account.boards.filter(name__iexact=board_name).first()
-        if not board:
-            return Response({"error": f"Board with name '{board_name}' not found"}, status=status.HTTP_400_BAD_REQUEST)
-        board_id = board.board_id
-
-    # Final check: if we have board_id but it's not in our cached boards?
-    # Usually we trust the board_id if provided directly.
-
-    success, message = create_pin(
+    # Create Task
+    task = PinPublishTask.objects.create(
         account=account,
         title=data.get('title', ''),
         description=data.get('description', ''),
         link=data.get('link', ''),
         image_url=data.get('image_url'),
-        board_id=board_id
+        board_id=data.get('board_id'),
+        board_name=data.get('board_name'),
+        status='PENDING'
     )
 
-    if success:
+    # Trigger Celery
+    celery_task = publish_pin_task.delay(task.id)
+    task.celery_task_id = celery_task.id
+    task.save()
+
+    return Response({
+        "status": "accepted",
+        "task_id": str(task.id)
+    }, status=status.HTTP_202_ACCEPTED)
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def get_task_status(request, task_id):
+    task = get_object_or_404(PinPublishTask, id=task_id)
+
+    if task.status == 'PENDING' or task.status == 'PROCESSING':
+        return Response({"status": task.status.lower()}, status=status.HTTP_200_OK)
+
+    if task.status == 'SUCCESS':
         return Response({"status": "success", "message": "Pin published successfully"}, status=status.HTTP_200_OK)
-    else:
-        # If it was a proxy error, create_pin already deactivated the account
-        return Response({"status": "error", "message": message}, status=status.HTTP_502_BAD_GATEWAY if "Proxy" in message else status.HTTP_400_BAD_REQUEST)
+
+    if task.status == 'FAILED':
+        error_data = task.error_json or {"error": "unknown_error", "message": "An unknown error occurred"}
+
+        http_status = status.HTTP_400_BAD_REQUEST
+        if error_data.get('error') == 'auth_error':
+            http_status = status.HTTP_401_UNAUTHORIZED
+        elif error_data.get('error') == 'proxy_error':
+            http_status = status.HTTP_502_BAD_GATEWAY
+
+        return Response(error_data, status=http_status)
+
+    return Response({"status": "unknown"}, status=status.HTTP_400_BAD_REQUEST)
