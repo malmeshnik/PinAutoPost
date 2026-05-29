@@ -91,10 +91,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'uk'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
+
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -137,8 +141,8 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 UNFOLD = {
-    "SITE_TITLE": "PinAutoPost Admin",
-    "SITE_HEADER": "PinAutoPost",
+    "SITE_TITLE": _("PinAutoPost Admin"),
+    "SITE_HEADER": _("PinAutoPost"),
     "DASHBOARD": {
         "template": "admin/dashboard.html",
         "config": "pinterest_app.dashboard.dashboard_callback",
