@@ -1,0 +1,173 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-29 12:10+0000\n"
+"PO-Revision-Date: 2026-05-29 12:15+0000\n"
+"Last-Translator: Jules\n"
+"Language-Team: Ukrainian\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != "
+"11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % "
+"100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
+"(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+
+#: pinterest_app/admin.py:52 pinterest_app/models.py:52
+msgid "Status"
+msgstr "Статус"
+
+#: pinterest_app/admin.py:63
+msgid "Error Details"
+msgstr "Деталі помилки"
+
+#: pinterest_app/apps.py:8
+msgid "Pinterest Application"
+msgstr "Застосунок Pinterest"
+
+#: pinterest_app/models.py:7
+msgid "User"
+msgstr "Користувач"
+
+#: pinterest_app/models.py:8 pinterest_app/models.py:26
+msgid "Name"
+msgstr "Назва"
+
+#: pinterest_app/models.py:9
+msgid "Cookies"
+msgstr "Куки"
+
+#: pinterest_app/models.py:9
+msgid "Original cookies array from browser extension"
+msgstr "Оригінальний масив куків з браузерного розширення"
+
+#: pinterest_app/models.py:10
+msgid "Proxy"
+msgstr "Проксі"
+
+#: pinterest_app/models.py:10
+msgid "Format: http://username:password@ip:port or socks5://..."
+msgstr "Формат: http://username:password@ip:port або socks5://..."
+
+#: pinterest_app/models.py:11
+msgid "Is active"
+msgstr "Активний"
+
+#: pinterest_app/models.py:12
+msgid "Webhook token"
+msgstr "Токен вебхука"
+
+#: pinterest_app/models.py:13 pinterest_app/models.py:56
+msgid "Created at"
+msgstr "Створено"
+
+#: pinterest_app/models.py:14 pinterest_app/models.py:57
+msgid "Updated at"
+msgstr "Оновлено"
+
+#: pinterest_app/models.py:20
+msgid "Pinterest Account"
+msgstr "Аккаунт Pinterest"
+
+#: pinterest_app/models.py:21
+msgid "Pinterest Accounts"
+msgstr "Аккаунти Pinterest"
+
+#: pinterest_app/models.py:24 pinterest_app/models.py:44
+msgid "Account"
+msgstr "Аккаунт"
+
+#: pinterest_app/models.py:25 pinterest_app/models.py:49
+msgid "Board ID"
+msgstr "ID Дошки"
+
+#: pinterest_app/models.py:27
+msgid "URL"
+msgstr "URL"
+
+#: pinterest_app/models.py:33
+msgid "Pinterest Board"
+msgstr "Дошка Pinterest"
+
+#: pinterest_app/models.py:34
+msgid "Pinterest Boards"
+msgstr "Дошки Pinterest"
+
+#: pinterest_app/models.py:38
+msgid "Pending"
+msgstr "Очікує"
+
+#: pinterest_app/models.py:39
+msgid "Processing"
+msgstr "Обробляється"
+
+#: pinterest_app/models.py:40
+msgid "Success"
+msgstr "Успішно"
+
+#: pinterest_app/models.py:41
+msgid "Failed"
+msgstr "Помилка"
+
+#: pinterest_app/models.py:45
+msgid "Title"
+msgstr "Заголовок"
+
+#: pinterest_app/models.py:46
+msgid "Description"
+msgstr "Опис"
+
+#: pinterest_app/models.py:47
+msgid "Link"
+msgstr "Посилання"
+
+#: pinterest_app/models.py:48
+msgid "Image URL"
+msgstr "URL зображення"
+
+#: pinterest_app/models.py:50
+msgid "Board Name"
+msgstr "Назва дошки"
+
+#: pinterest_app/models.py:53
+msgid "Error JSON"
+msgstr "JSON помилки"
+
+#: pinterest_app/models.py:54
+msgid "Celery Task ID"
+msgstr "ID завдання Celery"
+
+#: pinterest_app/models.py:63
+msgid "Pin Publish Task"
+msgstr "Завдання публікації піна"
+
+#: pinterest_app/models.py:64
+msgid "Pin Publish Tasks"
+msgstr "Завдання публікації пінів"
+
+#: pinterest_poster/settings.py:144
+msgid "PinAutoPost Admin"
+msgstr "Адмін-панель PinAutoPost"
+
+#: pinterest_poster/settings.py:145
+msgid "PinAutoPost"
+msgstr "PinAutoPost"
+
+#: pinterest_poster/settings.py:151
+msgid "Dashboard"
+msgstr "Панель приладів"
+
+#: pinterest_poster/settings.py:156
+msgid "Accounts"
+msgstr "Аккаунти"
+
+#: pinterest_poster/settings.py:161
+msgid "Tasks"
+msgstr "Завдання"
