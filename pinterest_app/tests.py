@@ -26,7 +26,7 @@ class PinterestAppTests(TestCase):
 
         self.board1 = PinterestBoard.objects.create(
             account=self.acc1,
-            pinterest_id="p1",
+            board_id="p1",
             name="Board 1",
             url="/b1/"
         )
@@ -62,11 +62,9 @@ class PinterestAppTests(TestCase):
             "board_name": "Board 1"
         }, format='json')
 
-        # Should at least get past authentication/finding account
-        # Since proxy check will fail (no internet/mock), it should return 502 or 400
-        self.assertIn(response.status_code, [400, 502])
-        if response.status_code == 502:
-            self.assertIn("Proxy", response.data['message'])
+        # New logic returns 202 Accepted
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertIn('task_id', response.data)
 
     def test_board_refresh_mock(self):
         # This tests if the action is reachable

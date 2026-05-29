@@ -5,3 +5,7 @@ python-dotenv
 psycopg2-binary
 requests
 gunicorn
+redis
+celery
+django-unfold==0.28.0
+django-celery-beat

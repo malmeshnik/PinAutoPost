@@ -1,0 +1,57 @@
+{% extends "unfold/layouts/skeleton.html" %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    {% for metric in metrics %}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 dark:text-gray-400">{{ metric.title }}</h3>
+
+        {% if metric.title == "Accounts" %}
+        <div class="flex justify-between items-end">
+            <div>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ metric.total }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Total accounts</p>
+            </div>
+            <div class="text-right">
+                <p class="text-sm font-medium text-green-600">{{ metric.active }} Active</p>
+                <p class="text-sm font-medium text-red-600">{{ metric.inactive }} Inactive</p>
+            </div>
+        </div>
+        {% elif metric.title == "Queue" %}
+        <div class="flex justify-between items-end">
+            <div>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ metric.total }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Tasks in queue</p>
+            </div>
+            <div class="text-right">
+                <p class="text-sm font-medium text-blue-600">{{ metric.pending }} Pending</p>
+                <p class="text-sm font-medium text-yellow-600">{{ metric.processing }} Processing</p>
+            </div>
+        </div>
+        {% elif metric.title == "Today Performance" %}
+        <div class="flex justify-between items-end">
+            <div>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ metric.success }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Successful today</p>
+            </div>
+            <div class="text-right">
+                <p class="text-3xl font-bold text-red-600">{{ metric.failed }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Failed today</p>
+            </div>
+        </div>
+        {% elif metric.title == "Critical Issues Today" %}
+        <div class="flex justify-between items-end">
+            <div class="bg-red-50 p-2 rounded dark:bg-red-900/20">
+                <p class="text-xl font-bold text-red-700 dark:text-red-400">{{ metric.auth_errors }}</p>
+                <p class="text-xs text-red-600 dark:text-red-400 uppercase font-bold">Auth Errors</p>
+            </div>
+            <div class="bg-orange-50 p-2 rounded dark:bg-orange-900/20">
+                <p class="text-xl font-bold text-orange-700 dark:text-orange-400">{{ metric.proxy_errors }}</p>
+                <p class="text-xs text-orange-600 dark:text-orange-400 uppercase font-bold">Proxy Errors</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
