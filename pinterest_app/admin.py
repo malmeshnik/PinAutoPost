@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import path
 from django.http import JsonResponse
+from django.utils.translation import gettext_lazy as _
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import display, action
 from .models import PinterestAccount, PinterestBoard, PinPublishTask
@@ -48,7 +49,7 @@ class PinPublishTaskAdmin(ModelAdmin):
     readonly_fields = ("celery_task_id", "created_at", "updated_at")
 
     @display(
-        description="Status",
+        description=_("Status"),
         label={
             "PENDING": "info",
             "PROCESSING": "warning",
@@ -57,9 +58,9 @@ class PinPublishTaskAdmin(ModelAdmin):
         },
     )
     def display_status(self, obj):
-        return obj.status
+        return obj.get_status_display()
 
-    @display(description="Error Details")
+    @display(description=_("Error Details"))
     def error_details(self, obj):
         if obj.error_json:
             import json
