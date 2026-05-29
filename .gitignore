@@ -1,2 +1,11 @@
+*.py[cod]
+__pycache__/
+db.sqlite3
+.env
+.venv
 venv/
+ENV/
+*.log
+static/
+media/
 cookies.json
