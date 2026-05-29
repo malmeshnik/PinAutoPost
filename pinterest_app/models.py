@@ -17,7 +17,7 @@ class PinterestAccount(models.Model):
 
 class PinterestBoard(models.Model):
     account = models.ForeignKey(PinterestAccount, on_delete=models.CASCADE, related_name='boards')
-    pinterest_id = models.CharField(max_length=100)
+    board_id = models.CharField(max_length=100)
     name = models.CharField(max_length=255)
     url = models.CharField(max_length=512)
 

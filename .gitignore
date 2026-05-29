@@ -8,3 +8,4 @@ ENV/
 *.log
 static/
 media/
+cookies.json

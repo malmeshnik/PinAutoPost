@@ -21,8 +21,6 @@ RUN echo '#!/bin/bash\n\
 python manage.py migrate\n\
 python manage.py collectstatic --noinput\n\
 exec gunicorn pinterest_poster.wsgi:application --bind 0.0.0.0:8000\n\
-' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+'
 
 EXPOSE 8000
-
-ENTRYPOINT ["/app/entrypoint.sh"]

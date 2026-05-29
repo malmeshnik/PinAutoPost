@@ -61,7 +61,7 @@ def publish_pin_webhook(request, webhook_token):
         board = account.boards.filter(name__iexact=board_name).first()
         if not board:
             return Response({"error": f"Board with name '{board_name}' not found"}, status=status.HTTP_400_BAD_REQUEST)
-        board_id = board.pinterest_id
+        board_id = board.board_id
 
     # Final check: if we have board_id but it's not in our cached boards?
     # Usually we trust the board_id if provided directly.

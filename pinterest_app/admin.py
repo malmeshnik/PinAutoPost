@@ -5,7 +5,7 @@ from .services import refresh_boards
 class PinterestBoardInline(admin.TabularInline):
     model = PinterestBoard
     extra = 0
-    readonly_fields = ('pinterest_id', 'name', 'url')
+    readonly_fields = ('board_id', 'name', 'url')
 
 @admin.register(PinterestAccount)
 class PinterestAccountAdmin(admin.ModelAdmin):
@@ -40,9 +40,9 @@ class PinterestAccountAdmin(admin.ModelAdmin):
 
 @admin.register(PinterestBoard)
 class PinterestBoardAdmin(admin.ModelAdmin):
-    list_display = ('name', 'pinterest_id', 'account')
+    list_display = ('name', 'board_id', 'account')
     list_filter = ('account',)
-    search_fields = ('name', 'pinterest_id')
+    search_fields = ('name', 'board_id')
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
