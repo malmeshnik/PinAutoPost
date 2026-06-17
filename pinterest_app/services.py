@@ -207,6 +207,49 @@ def refresh_boards(account: PinterestAccount):
         )
         return
 
+def get_signed_pinterest_url(session, csrf_token, original_image_url):
+    """
+    Робить запит до FindPinImagesResource і повертає підписаний проксі-лінк 
+    із домену i.pinimgproxy.com (із сигнатурою sig).
+    Якщо запит упав, повертає None, щоб код міг зробити фолбек на оригінальний URL.
+    """
+    url = "https://www.pinterest.com/resource/FindPinImagesResource/get/"
+    
+    data = {
+        "options": {
+            "url": original_image_url,
+        },
+    }
+
+    headers = {
+        "x-requested-with": "XMLHttpRequest",
+        "x-csrftoken": csrf_token,
+        "referer": "https://www.pinterest.com/pin-builder/?tab=save_from_url",
+    }
+
+    try:
+        logger.info(f"Отримуємо підписаний Pinterest URL для: {original_image_url}")
+        response = session.get(
+            url,
+            params={"source_url": "/pin-builder/?tab=save_from_url", "data": json.dumps(data)},
+            headers=headers,
+            timeout=15,
+        )
+
+        if response.status_code == 200:
+            res_json = response.json()
+            items = res_json.get("resource_response", {}).get("data", {}).get("items", [])
+            if items:
+                signed_url = items[0].get("url")
+                logger.info("Підписаний URL успішно отримано.")
+                return signed_url
+            
+        logger.warning(f"Не вдалося отримати проксі-лінк, статус: {response.status_code}")
+    except Exception as e:
+        logger.error(f"Помилка при виконанні FindPinImagesResource: {e}")
+        
+    return None
+
 
 def create_pin(
     account: PinterestAccount, title, description, link, image_url, board_id
@@ -224,6 +267,10 @@ def create_pin(
 
     logger.debug(f"Using base URL: {base_url}, origin: {base_origin}")
 
+    signed_url = get_signed_pinterest_url(session, csrf_token, image_url)
+    logger.info(f"Signed URL: {signed_url}")
+    final_image_url = signed_url if signed_url else image_url
+
     headers = {
         "content-type": "application/x-www-form-urlencoded",
         "x-csrftoken": csrf_token,
@@ -239,11 +286,8 @@ def create_pin(
         "board_id": board_id,
         "description": description,
         "title": title,
-        "image_url": image_url,
+        "image_url": final_image_url,
         "link": link,
-        "method": "scraped",
-        "scrape_metric": {"source": "www_url_scrape"},
-        "user_mention_tags": [],
     }
 
     payload = {

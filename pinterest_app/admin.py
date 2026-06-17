@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.html import format_html
 from django.urls import path
 from django.http import JsonResponse
@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import display, action
 from .models import PinterestAccount, PinterestBoard, PinPublishTask
-from .tasks import publish_pin_task
+from .tasks import publish_pin_task, refresh_all_accounts_boards_task
 
 class PinterestBoardInline(TabularInline):
     model = PinterestBoard
@@ -16,6 +16,22 @@ class PinterestBoardInline(TabularInline):
 class PinterestAccountAdmin(ModelAdmin):
     list_display = ("name", "user", "is_active", "webhook_token", "created_at")
     list_filter = ("is_active", "user")
+    actions = ["refresh_boards_action"]
+
+    @admin.action(description="Оновити дошки для вибраних акаунтів")
+    def refresh_boards_action(self, request, queryset):
+        # Отримуємо список ID вибраних акаунтів
+        account_ids = list(queryset.values_list('id', flat=True))
+        
+        # Запускаємо Celery таск асинхронно
+        refresh_all_accounts_boards_task.delay(account_ids)
+        
+        # Виводимо повідомлення в адмінці
+        self.message_user(
+            request, 
+            f"Завдання на оновлення дошок для {len(account_ids)} акаунтів успішно запущено в фоні.", 
+            messages.SUCCESS
+        )
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -40,6 +56,8 @@ class PinterestAccountAdmin(ModelAdmin):
     def get_boards_ajax(self, request, account_id):
         boards = PinterestBoard.objects.filter(account_id=account_id).values('board_id', 'name')
         return JsonResponse(list(boards), safe=False)
+
+    
 
 @admin.register(PinPublishTask)
 class PinPublishTaskAdmin(ModelAdmin):
