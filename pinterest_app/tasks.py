@@ -6,7 +6,7 @@ from .services import create_pin, refresh_boards
 
 logger = logging.getLogger(__name__)
 
-@shared_task(bind=True, max_retries=3)
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
 def publish_pin_task(self, task_id):
     try:
         task = PinPublishTask.objects.get(id=task_id)
@@ -52,35 +52,61 @@ def publish_pin_task(self, task_id):
         task.save()
         return
 
-    success, message = create_pin(
-        account=account,
-        title=task.title,
-        description=task.description,
-        link=task.link,
-        image_url=task.image_url,
-        board_id=board_id
-    )
+    try:
+        success, message = create_pin(
+            account=account,
+            title=task.title,
+            description=task.description,
+            link=task.link,
+            image_url=task.image_url,
+            board_id=board_id
+        )
 
-    if success:
-        task.status = 'SUCCESS'
-        task.error_json = None
-    else:
+        if success:
+            task.status = 'SUCCESS'
+            task.error_json = None
+        else:
+            # Standardizing errors
+            error_type = "unknown_error"
+            should_retry = False
+
+            if "Auth error" in message or "expired" in message.lower():
+                error_type = "auth_error"
+                message = "Pinterest cookies expired. Account deactivated."
+                # Don't retry auth errors
+            elif "Proxy" in message or "proxy" in message.lower() or "connection timeout" in message.lower() or "Timeout" in message:
+                error_type = "proxy_error"
+                message = "Proxy connection timeout or IP blocked"
+                should_retry = True
+            elif "Pinterest error" in message:
+                error_type = "api_error"
+                # Retry API errors
+                should_retry = True
+
+            task.error_json = {
+                "error": error_type,
+                "message": message,
+                "retry_count": self.request.retries
+            }
+            task.save()
+
+            # Retry for temporary errors
+            if should_retry and self.request.retries < self.max_retries:
+                logger.warning(f"Retrying task {task_id}, attempt {self.request.retries + 1}/{self.max_retries}")
+                raise self.retry(exc=Exception(message), countdown=60 * (2 ** self.request.retries))
+
+            task.status = 'FAILED'
+
+    except Exception as exc:
         task.status = 'FAILED'
-        # Standardizing errors
-        error_type = "unknown_error"
-        if "Auth error" in message or "expired" in message.lower():
-            error_type = "auth_error"
-            message = "Pinterest cookies expired. Account deactivated."
-        elif "Proxy" in message or "proxy" in message.lower() or "connection timeout" in message.lower():
-            error_type = "proxy_error"
-            message = "Proxy connection timeout or IP blocked"
-        elif "Pinterest error" in message:
-            error_type = "api_error"
-
         task.error_json = {
-            "error": error_type,
-            "message": message
+            "error": "exception",
+            "message": str(exc),
+            "retry_count": self.request.retries
         }
+        task.save()
+        logger.error(f"Exception in publish_pin_task {task_id}: {exc}", exc_info=True)
+        return
 
     task.save()
 

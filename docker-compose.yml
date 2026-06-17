@@ -18,7 +18,7 @@ services:
     volumes:
       - .:/app
     ports:
-      - "8008:8000"
+      - "8001:8000"
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
