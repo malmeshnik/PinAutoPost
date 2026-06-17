@@ -85,8 +85,8 @@ def publish_pin_task(self, task_id):
     task.save()
 
 @shared_task
-def refresh_all_accounts_boards_task():
-    active_accounts = PinterestAccount.objects.filter(is_active=True)
+def refresh_all_accounts_boards_task(account_ids: int):
+    active_accounts = PinterestAccount.objects.filter(id__in=account_ids)
     logger.info(f"Starting scheduled board refresh for {active_accounts.count()} accounts")
     for account in active_accounts:
         try:
