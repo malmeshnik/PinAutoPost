@@ -18,7 +18,7 @@ class PinterestAccountAdmin(ModelAdmin):
     list_filter = ("is_active", "user")
     actions = ["refresh_boards_action"]
 
-    @admin.action(description="Оновити дошки для вибраних акаунтів")
+    @admin.action(description=_("Refresh boards for selected accounts"))
     def refresh_boards_action(self, request, queryset):
         # Отримуємо список ID вибраних акаунтів
         account_ids = list(queryset.values_list('id', flat=True))
@@ -29,7 +29,7 @@ class PinterestAccountAdmin(ModelAdmin):
         # Виводимо повідомлення в адмінці
         self.message_user(
             request, 
-            f"Завдання на оновлення дошок для {len(account_ids)} акаунтів успішно запущено в фоні.", 
+            _("Task to refresh boards for {} accounts successfully started in background.").format(len(account_ids)),
             messages.SUCCESS
         )
 

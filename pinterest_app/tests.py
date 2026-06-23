@@ -213,7 +213,7 @@ class PinterestAppTests(TestCase):
             status='PENDING'
         )
 
-        response = client.get(f'/api/v1/task/{task.id}/')
+        response = client.get(f'/api/v1/publish/status/{task.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], 'pending')
 
@@ -227,7 +227,7 @@ class PinterestAppTests(TestCase):
             status='SUCCESS'
         )
 
-        response = client.get(f'/api/v1/task/{task.id}/')
+        response = client.get(f'/api/v1/publish/status/{task.id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], 'success')
         self.assertIn('message', response.data)
@@ -246,7 +246,7 @@ class PinterestAppTests(TestCase):
             }
         )
 
-        response = client.get(f'/api/v1/task/{task.id}/')
+        response = client.get(f'/api/v1/publish/status/{task.id}/')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data['error'], 'auth_error')
         self.assertIn('message', response.data)

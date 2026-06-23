@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 from .models import PinterestAccount, PinterestBoard, PinPublishTask
 from .serializers import PinterestAccountSerializer, PinterestBoardSerializer, PinPublishSerializer, PinPublishTaskSerializer
 from .services import refresh_boards, check_proxy
@@ -25,18 +26,18 @@ class PinterestAccountViewSet(viewsets.ModelViewSet):
         proxy = self.request.data.get('proxy')
         if proxy and not check_proxy(proxy):
             logger.error(f"✗ Proxy validation failed for: {proxy}")
-            raise ValidationError({"proxy": "Проксі недоступний або невалідний. Перевірте формат: http://user:pass@ip:port"})
+            raise ValidationError({"proxy": _("Proxy is unavailable or invalid. Check format: http://user:pass@ip:port")})
 
         cookies = self.request.data.get('cookies')
         if not cookies:
-            raise ValidationError({"cookies": "Cookies обов'язкові для створення акаунта"})
+            raise ValidationError({"cookies": _("Cookies are required for account creation")})
 
         # Validate cookies structure
         if isinstance(cookies, dict):
             if "cookies" not in cookies and "url" not in cookies:
-                raise ValidationError({"cookies": "Невалідна структура cookies. Очікується: {\"url\": \"...\", \"cookies\": [...]}"})
+                raise ValidationError({"cookies": _("Invalid cookies structure. Expected: {\"url\": \"...\", \"cookies\": [...]}")})
         elif not isinstance(cookies, list):
-            raise ValidationError({"cookies": "Cookies повинні бути масивом або об'єктом з полями url та cookies"})
+            raise ValidationError({"cookies": _("Cookies must be an array or an object with url and cookies fields")})
 
         account = serializer.save(user=self.request.user)
         logger.info(f"✓ Account {account.name} created, starting board refresh...")
@@ -51,8 +52,8 @@ class PinterestAccountViewSet(viewsets.ModelViewSet):
                 account.save()
                 logger.error(f"✗ No boards found for account {account.name}, marking as inactive")
                 raise ValidationError({
-                    "account": f"Акаунт створено, але не вдалося отримати дошки. "
-                               f"Перевірте cookies та спробуйте ще раз. Акаунт деактивовано."
+                    "account": _("Account created, but failed to retrieve boards. "
+                                 "Check cookies and try again. Account deactivated.")
                 })
 
             logger.info(f"✓ Account {account.name} validated successfully with {boards_count} boards")
@@ -61,7 +62,7 @@ class PinterestAccountViewSet(viewsets.ModelViewSet):
             account.save()
             logger.error(f"✗ Failed to validate account {account.name}: {e}")
             raise ValidationError({
-                "account": f"Помилка при валідації акаунта: {str(e)}. Акаунт деактивовано."
+                "account": _("Error during account validation: {}. Account deactivated.").format(str(e))
             })
 
     @action(detail=True, methods=['get'])
@@ -80,7 +81,7 @@ class PinterestAccountViewSet(viewsets.ModelViewSet):
                     logger.warning(f"⚠ No boards found after refresh for account {account.name}")
                     return Response({
                         "error": "no_boards",
-                        "message": f"Не вдалося отримати дошки для акаунту {account.name}. Перевірте cookies та проксі."
+                        "message": _("Failed to get boards for account {}. Check cookies and proxy.").format(account.name)
                     }, status=status.HTTP_400_BAD_REQUEST)
 
                 logger.info(f"✓ Refreshed {boards_count} boards for account {account.name}")
@@ -88,7 +89,7 @@ class PinterestAccountViewSet(viewsets.ModelViewSet):
                 logger.error(f"✗ Error refreshing boards for account {account.name}: {e}")
                 return Response({
                     "error": "refresh_failed",
-                    "message": f"Помилка при оновленні дошок: {str(e)}"
+                    "message": _("Error while refreshing boards: {}").format(str(e))
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         boards = account.boards.all()

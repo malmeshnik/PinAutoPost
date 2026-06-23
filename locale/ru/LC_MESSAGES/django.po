@@ -7,27 +7,25 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-23 08:17+0000\n"
-"PO-Revision-Date: 2026-05-29 12:15+0000\n"
+"POT-Creation-Date: 2026-06-23 08:14+0000\n"
+"PO-Revision-Date: 2026-06-23 08:15+0000\n"
 "Last-Translator: Jules\n"
-"Language-Team: Ukrainian\n"
-"Language: uk\n"
+"Language-Team: Russian\n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != "
-"11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % "
-"100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
-"(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
 #: pinterest_app/admin.py:21
 msgid "Refresh boards for selected accounts"
-msgstr ""
+msgstr "Обновить доски для выбранных аккаунтов"
 
 #: pinterest_app/admin.py:32
 msgid ""
 "Task to refresh boards for {} accounts successfully started in background."
-msgstr ""
+msgstr "Задание на обновление досок для {} аккаунтов успешно запущено в фоновом режиме."
 
 #: pinterest_app/admin.py:70 pinterest_app/models.py:52
 msgid "Status"
@@ -35,19 +33,19 @@ msgstr "Статус"
 
 #: pinterest_app/admin.py:81
 msgid "Error Details"
-msgstr "Деталі помилки"
+msgstr "Детали ошибки"
 
 #: pinterest_app/apps.py:8
 msgid "Pinterest Application"
-msgstr "Застосунок Pinterest"
+msgstr "Приложение Pinterest"
 
 #: pinterest_app/models.py:7
 msgid "User"
-msgstr "Користувач"
+msgstr "Пользователь"
 
 #: pinterest_app/models.py:8 pinterest_app/models.py:26
 msgid "Name"
-msgstr "Назва"
+msgstr "Название"
 
 #: pinterest_app/models.py:9
 msgid "Cookies"
@@ -55,19 +53,19 @@ msgstr "Куки"
 
 #: pinterest_app/models.py:9
 msgid "Original cookies array from browser extension"
-msgstr "Оригінальний масив куків з браузерного розширення"
+msgstr "Оригинальный массив куков из расширения браузера"
 
 #: pinterest_app/models.py:10
 msgid "Proxy"
-msgstr "Проксі"
+msgstr "Прокси"
 
 #: pinterest_app/models.py:10
 msgid "Format: http://username:password@ip:port or socks5://..."
-msgstr "Формат: http://username:password@ip:port або socks5://..."
+msgstr "Формат: http://username:password@ip:port или socks5://..."
 
 #: pinterest_app/models.py:11
 msgid "Is active"
-msgstr "Активний"
+msgstr "Активен"
 
 #: pinterest_app/models.py:12
 msgid "Webhook token"
@@ -75,11 +73,11 @@ msgstr "Токен вебхука"
 
 #: pinterest_app/models.py:13 pinterest_app/models.py:56
 msgid "Created at"
-msgstr "Створено"
+msgstr "Создано"
 
 #: pinterest_app/models.py:14 pinterest_app/models.py:57
 msgid "Updated at"
-msgstr "Оновлено"
+msgstr "Обновлено"
 
 #: pinterest_app/models.py:20
 msgid "Pinterest Account"
@@ -87,7 +85,7 @@ msgstr "Аккаунт Pinterest"
 
 #: pinterest_app/models.py:21
 msgid "Pinterest Accounts"
-msgstr "Аккаунти Pinterest"
+msgstr "Аккаунты Pinterest"
 
 #: pinterest_app/models.py:24 pinterest_app/models.py:44
 msgid "Account"
@@ -95,7 +93,7 @@ msgstr "Аккаунт"
 
 #: pinterest_app/models.py:25 pinterest_app/models.py:49
 msgid "Board ID"
-msgstr "ID Дошки"
+msgstr "ID Доски"
 
 #: pinterest_app/models.py:27
 msgid "URL"
@@ -103,27 +101,27 @@ msgstr "URL"
 
 #: pinterest_app/models.py:33
 msgid "Pinterest Board"
-msgstr "Дошка Pinterest"
+msgstr "Доска Pinterest"
 
 #: pinterest_app/models.py:34
 msgid "Pinterest Boards"
-msgstr "Дошки Pinterest"
+msgstr "Доски Pinterest"
 
 #: pinterest_app/models.py:38
 msgid "Pending"
-msgstr "Очікує"
+msgstr "В очереди"
 
 #: pinterest_app/models.py:39
 msgid "Processing"
-msgstr "Обробляється"
+msgstr "Обрабатывается"
 
 #: pinterest_app/models.py:40
 msgid "Success"
-msgstr "Успішно"
+msgstr "Успешно"
 
 #: pinterest_app/models.py:41
 msgid "Failed"
-msgstr "Помилка"
+msgstr "Ошибка"
 
 #: pinterest_app/models.py:45
 msgid "Title"
@@ -131,82 +129,81 @@ msgstr "Заголовок"
 
 #: pinterest_app/models.py:46
 msgid "Description"
-msgstr "Опис"
+msgstr "Описание"
 
 #: pinterest_app/models.py:47
 msgid "Link"
-msgstr "Посилання"
+msgstr "Ссылка"
 
 #: pinterest_app/models.py:48
 msgid "Image URL"
-msgstr "URL зображення"
+msgstr "URL изображения"
 
 #: pinterest_app/models.py:50
 msgid "Board Name"
-msgstr "Назва дошки"
+msgstr "Название доски"
 
 #: pinterest_app/models.py:53
 msgid "Error JSON"
-msgstr "JSON помилки"
+msgstr "JSON ошибки"
 
 #: pinterest_app/models.py:54
 msgid "Celery Task ID"
-msgstr "ID завдання Celery"
+msgstr "ID задачи Celery"
 
 #: pinterest_app/models.py:63
 msgid "Pin Publish Task"
-msgstr "Завдання публікації піна"
+msgstr "Задача публикации пина"
 
 #: pinterest_app/models.py:64
 msgid "Pin Publish Tasks"
-msgstr "Завдання публікації пінів"
+msgstr "Задачи публикации пинов"
 
 #: pinterest_app/views.py:29
 msgid "Proxy is unavailable or invalid. Check format: http://user:pass@ip:port"
-msgstr ""
+msgstr "Прокси недоступен или невалиден. Проверьте формат: http://user:pass@ip:port"
 
 #: pinterest_app/views.py:33
 msgid "Cookies are required for account creation"
-msgstr ""
+msgstr "Куки обязательны для создания аккаунта"
 
 #: pinterest_app/views.py:38
-msgid ""
-"Invalid cookies structure. Expected: {\"url\": \"...\", \"cookies\": [...]}"
-msgstr ""
+msgid "Invalid cookies structure. Expected: {\"url\": \"...\", \"cookies\": [...]}"
+msgstr "Невалидная структура куков. Ожидается: {\"url\": \"...\", \"cookies\": [...]}"
 
 #: pinterest_app/views.py:40
 msgid "Cookies must be an array or an object with url and cookies fields"
-msgstr ""
+msgstr "Куки должны быть массивом или объектом с полями url и cookies"
 
 #: pinterest_app/views.py:55
 msgid ""
 "Account created, but failed to retrieve boards. Check cookies and try again. "
 "Account deactivated."
-msgstr ""
+msgstr "Аккаунт создан, но не удалось получить доски. Проверьте куки и попробуйте еще раз. Аккаунт деактивирован."
 
 #: pinterest_app/views.py:65
 msgid "Error during account validation: {}. Account deactivated."
-msgstr ""
+msgstr "Ошибка при валидации аккаунта: {}. Аккаунт деактивирован."
 
 #: pinterest_app/views.py:84
 msgid "Failed to get boards for account {}. Check cookies and proxy."
-msgstr ""
+msgstr "Не удалось получить доски для аккаунта {}. Проверьте куки и прокси."
 
 #: pinterest_app/views.py:92
 msgid "Error while refreshing boards: {}"
-msgstr ""
+msgstr "Ошибка при обновлении досок: {}"
 
 #: pinterest_poster/settings.py:100
 msgid "Russian"
-msgstr ""
+msgstr "Русский"
 
 #: pinterest_poster/settings.py:101
 msgid "Ukrainian"
-msgstr ""
+msgstr "Украинский"
 
 #: pinterest_poster/settings.py:152
 msgid "PinAutoPost Admin"
-msgstr "Адмін-панель PinAutoPost"
+msgstr "Админ-панель PinAutoPost"
 
 #: pinterest_poster/settings.py:153
 msgid "PinAutoPost"
@@ -214,12 +211,12 @@ msgstr "PinAutoPost"
 
 #: pinterest_poster/settings.py:162
 msgid "Dashboard"
-msgstr "Панель приладів"
+msgstr "Панель управления"
 
 #: pinterest_poster/settings.py:167
 msgid "Accounts"
-msgstr "Аккаунти"
+msgstr "Аккаунты"
 
 #: pinterest_poster/settings.py:172
 msgid "Tasks"
-msgstr "Завдання"
+msgstr "Задачи"

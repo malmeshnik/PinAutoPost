@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from django.utils.translation import gettext_lazy as _
 
 load_dotenv()
 
@@ -28,6 +29,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'pinterest_app.middleware.TimezoneMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -91,7 +94,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'uk'
+LANGUAGE_CODE = 'ru'
+
+LANGUAGES = [
+    ('ru', _('Russian')),
+    ('uk', _('Ukrainian')),
+]
+
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
@@ -138,11 +147,13 @@ CELERY_BEAT_SCHEDULE = {
 
 # Unfold Configuration
 from django.urls import reverse_lazy
-from django.utils.translation import gettext_lazy as _
 
 UNFOLD = {
     "SITE_TITLE": _("PinAutoPost Admin"),
     "SITE_HEADER": _("PinAutoPost"),
+    "SCRIPTS": [
+        lambda request: "/static/js/timezone.js",
+    ],
     "DASHBOARD": {
         "template": "admin/dashboard.html",
         "config": "pinterest_app.dashboard.dashboard_callback",
