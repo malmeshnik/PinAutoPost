@@ -140,18 +140,26 @@ class PinterestAppTests(TestCase):
         response = client.get('/api/v1/accounts/')
         self.assertEqual(len(response.data), 2)
 
-    def test_webhook_access(self):
+    def test_webhook_access_async(self):
+        """Test async webhook - should return 202 Accepted with task_id"""
         client = APIClient()
-        # Public access via token
         url = f'/api/v1/publish/{self.acc1.webhook_token}/'
         response = client.post(url, {
             "image_url": "http://image.jpg",
             "board_name": "Board 1"
         }, format='json')
 
-        # Should return 202 Accepted
+        # Should return 202 Accepted immediately
         self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
         self.assertIn('task_id', response.data)
+        self.assertIn('status_url', response.data)
+        self.assertEqual(response.data['status'], 'accepted')
+
+        # Verify task was created
+        task_id = response.data['task_id']
+        task = PinPublishTask.objects.get(id=task_id)
+        self.assertEqual(task.account, self.acc1)
+        self.assertEqual(task.image_url, "http://image.jpg")
 
     def test_webhook_with_wait_parameter(self):
         """Test synchronous webhook with wait=true parameter"""
@@ -162,9 +170,14 @@ class PinterestAppTests(TestCase):
             "board_name": "Board 1"
         }, format='json')
 
-        # Should return result (likely timeout in test environment)
-        self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_202_ACCEPTED, status.HTTP_400_BAD_REQUEST])
+        # Should return result (likely timeout or failed in test environment due to no real proxy/cookies)
+        self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_202_ACCEPTED, status.HTTP_400_BAD_REQUEST, status.HTTP_502_BAD_GATEWAY])
         self.assertIn('task_id', response.data)
+
+        # Check that task was created
+        task_id = response.data['task_id']
+        task = PinPublishTask.objects.get(id=task_id)
+        self.assertIsNotNone(task)
 
     def test_board_refresh_mock(self):
         # This tests if the action is reachable
@@ -189,6 +202,54 @@ class PinterestAppTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('error', response.data)
+
+    def test_get_task_status_pending(self):
+        """Test getting status of a pending task"""
+        client = APIClient()
+        task = PinPublishTask.objects.create(
+            account=self.acc1,
+            image_url="http://image.jpg",
+            board_id="123",
+            status='PENDING'
+        )
+
+        response = client.get(f'/api/v1/task/{task.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'pending')
+
+    def test_get_task_status_success(self):
+        """Test getting status of a successful task"""
+        client = APIClient()
+        task = PinPublishTask.objects.create(
+            account=self.acc1,
+            image_url="http://image.jpg",
+            board_id="123",
+            status='SUCCESS'
+        )
+
+        response = client.get(f'/api/v1/task/{task.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'success')
+        self.assertIn('message', response.data)
+
+    def test_get_task_status_failed(self):
+        """Test getting status of a failed task with error details"""
+        client = APIClient()
+        task = PinPublishTask.objects.create(
+            account=self.acc1,
+            image_url="http://image.jpg",
+            board_id="123",
+            status='FAILED',
+            error_json={
+                "error": "auth_error",
+                "message": "Cookies expired"
+            }
+        )
+
+        response = client.get(f'/api/v1/task/{task.id}/')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.data['error'], 'auth_error')
+        self.assertIn('message', response.data)
 
 
 class PinPublishTaskTests(TestCase):
