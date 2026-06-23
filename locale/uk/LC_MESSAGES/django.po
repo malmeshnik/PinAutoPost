@@ -22,12 +22,12 @@ msgstr ""
 
 #: pinterest_app/admin.py:21
 msgid "Refresh boards for selected accounts"
-msgstr ""
+msgstr "Оновити дошки для обраних аккаунтів"
 
 #: pinterest_app/admin.py:32
 msgid ""
 "Task to refresh boards for {} accounts successfully started in background."
-msgstr ""
+msgstr "Завдання оновлення дошок для {} акаунтів успішно запущено у фоні"
 
 #: pinterest_app/admin.py:70 pinterest_app/models.py:52
 msgid "Status"
@@ -163,46 +163,46 @@ msgstr "Завдання публікації пінів"
 
 #: pinterest_app/views.py:29
 msgid "Proxy is unavailable or invalid. Check format: http://user:pass@ip:port"
-msgstr ""
+msgstr "Проксі недоступне або невалідне. Перевірте формат: http://user:pass@ip:port"
 
 #: pinterest_app/views.py:33
 msgid "Cookies are required for account creation"
-msgstr ""
+msgstr "Потрібні куки для створення акаунту"
 
 #: pinterest_app/views.py:38
 msgid ""
 "Invalid cookies structure. Expected: {\"url\": \"...\", \"cookies\": [...]}"
-msgstr ""
+msgstr "Неправильна структура куків. Очікується: {\"url\": \"...\", \"cookies\": [...]}"
 
 #: pinterest_app/views.py:40
 msgid "Cookies must be an array or an object with url and cookies fields"
-msgstr ""
+msgstr "Куки мають бути у вигляді списку а не словника"
 
 #: pinterest_app/views.py:55
 msgid ""
 "Account created, but failed to retrieve boards. Check cookies and try again. "
 "Account deactivated."
-msgstr ""
+msgstr "Акаунтів створено, але не вдалось отримати дошки. Перевірте куки та проксі. Акаунт деактивовано"
 
 #: pinterest_app/views.py:65
 msgid "Error during account validation: {}. Account deactivated."
-msgstr ""
+msgstr "Помилка при валідації аккаунту: {}. Аккаунт деактивовано"
 
 #: pinterest_app/views.py:84
 msgid "Failed to get boards for account {}. Check cookies and proxy."
-msgstr ""
+msgstr "Помилка отримання дошок для аккаунту {}. Перевірте куки та проксі"
 
 #: pinterest_app/views.py:92
 msgid "Error while refreshing boards: {}"
-msgstr ""
+msgstr "Помилка при оновленні дошок: {}"
 
 #: pinterest_poster/settings.py:100
 msgid "Russian"
-msgstr ""
+msgstr "Російська"
 
 #: pinterest_poster/settings.py:101
 msgid "Ukrainian"
-msgstr ""
+msgstr "Українська"
 
 #: pinterest_poster/settings.py:152
 msgid "PinAutoPost Admin"
