@@ -118,9 +118,9 @@ def publish_pin_webhook(request, webhook_token):
     # Create Task
     task = PinPublishTask.objects.create(
         account=account,
-        title=data.get('title', ''),
-        description=data.get('description', ''),
-        link=data.get('link', ''),
+        title=data.get('title'),
+        description=data.get('description'),
+        link=data.get('link'),
         image_url=data.get('image_url'),
         board_id=data.get('board_id'),
         board_name=data.get('board_name'),
