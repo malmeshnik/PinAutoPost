@@ -16,11 +16,12 @@ services:
 
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: python -m debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000 --noreload
     volumes:
       - .:/app
     ports:
       - "80:8000"
+      - "5678:5678"
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
@@ -40,7 +41,9 @@ services:
 
   worker:
     build: .
-    command: celery -A pinterest_poster worker -l info
+    command: python -m debugpy --listen 0.0.0.0:5679 -m celery -A pinterest_poster worker -l info
+    ports:
+      - "5679:5679"
     volumes:
       - .:/app
     environment:
