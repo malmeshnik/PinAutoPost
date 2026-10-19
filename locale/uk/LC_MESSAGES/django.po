@@ -15,10 +15,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != "
-"11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % "
-"100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || "
-"(n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
 
 #: pinterest_app/admin.py:21
 msgid "Refresh boards for selected accounts"
@@ -51,7 +48,7 @@ msgstr "Назва"
 
 #: pinterest_app/models.py:9
 msgid "Cookies"
-msgstr "Куки"
+msgstr "Cookies"
 
 #: pinterest_app/models.py:9
 msgid "Original cookies array from browser extension"
@@ -91,7 +88,7 @@ msgstr "Аккаунти Pinterest"
 
 #: pinterest_app/models.py:24 pinterest_app/models.py:44
 msgid "Account"
-msgstr "Аккаунт"
+msgstr "Акаунт"
 
 #: pinterest_app/models.py:25 pinterest_app/models.py:49
 msgid "Board ID"
@@ -162,16 +159,17 @@ msgid "Pin Publish Tasks"
 msgstr "Завдання публікації пінів"
 
 #: pinterest_app/views.py:29
-msgid "Proxy is unavailable or invalid. Check format: http://user:pass@ip:port"
-msgstr "Проксі недоступне або невалідне. Перевірте формат: http://user:pass@ip:port"
+msgid ""
+"Proxy is unavailable or invalid. Check format: http://user:pass@ip:port"
+msgstr ""
+"Проксі недоступне або невалідне. Перевірте формат: http://user:pass@ip:port"
 
 #: pinterest_app/views.py:33
 msgid "Cookies are required for account creation"
 msgstr "Потрібні куки для створення акаунту"
 
 #: pinterest_app/views.py:38
-msgid ""
-"Invalid cookies structure. Expected: {\"url\": \"...\", \"cookies\": [...]}"
+msgid "Invalid cookies structure. Expected: {\"url\": \"...\", \"cookies\": [...]}"
 msgstr "Неправильна структура куків. Очікується: {\"url\": \"...\", \"cookies\": [...]}"
 
 #: pinterest_app/views.py:40
@@ -180,9 +178,11 @@ msgstr "Куки мають бути у вигляді списку а не сл
 
 #: pinterest_app/views.py:55
 msgid ""
-"Account created, but failed to retrieve boards. Check cookies and try again. "
-"Account deactivated."
-msgstr "Акаунтів створено, але не вдалось отримати дошки. Перевірте куки та проксі. Акаунт деактивовано"
+"Account created, but failed to retrieve boards. Check cookies and try again."
+" Account deactivated."
+msgstr ""
+"Акаунтів створено, але не вдалось отримати дошки. Перевірте куки та проксі. "
+"Акаунт деактивовано"
 
 #: pinterest_app/views.py:65
 msgid "Error during account validation: {}. Account deactivated."
@@ -223,3 +223,253 @@ msgstr "Аккаунти"
 #: pinterest_poster/settings.py:172
 msgid "Tasks"
 msgstr "Завдання"
+
+msgid "Overview"
+msgstr "Огляд"
+
+msgid "Today"
+msgstr "Сьогодні"
+
+msgid "Key metrics"
+msgstr "Ключові показники"
+
+msgid "Monitor is not reporting"
+msgstr "Монітор не відповідає"
+
+msgid "All systems operational"
+msgstr "Усі системи працюють"
+
+msgid "Published today"
+msgstr "Опубліковано сьогодні"
+
+msgid "success rate"
+msgstr "успішних"
+
+msgid "No finished publications yet"
+msgstr "Завершених публікацій ще немає"
+
+msgid "Failed today"
+msgstr "Помилок сьогодні"
+
+msgid "See the breakdown below"
+msgstr "Розподіл за причинами нижче"
+
+msgid "No failures today"
+msgstr "Сьогодні без помилок"
+
+msgid "In queue"
+msgstr "У черзі"
+
+msgid "pending"
+msgstr "очікують"
+
+msgid "processing"
+msgstr "в роботі"
+
+msgid "Pinterest accounts"
+msgstr "Акаунти Pinterest"
+
+msgid "active"
+msgstr "активних"
+
+msgid "inactive"
+msgstr "неактивних"
+
+msgid "System health"
+msgstr "Стан системи"
+
+msgid "Checked"
+msgstr "Перевірено о"
+
+msgid ""
+"The health monitor has not reported for more than 3 minutes. Start it with"
+msgstr "Монітор не надсилав даних понад 3 хвилини. Запустіть його командою"
+
+msgid "Operational"
+msgstr "Працює"
+
+msgid "Down"
+msgstr "Збій"
+
+msgid "Unknown"
+msgstr "Немає даних"
+
+msgid "Failures today by cause"
+msgstr "Помилки сьогодні за причинами"
+
+msgid "No failed publications today"
+msgstr "Сьогодні помилок публікації не було"
+
+msgid "Recent failed publications"
+msgstr "Останні невдалі публікації"
+
+msgid "All failed tasks"
+msgstr "Усі помилки"
+
+msgid "Time"
+msgstr "Час"
+
+msgid "Pin"
+msgstr "Пін"
+
+msgid "Error"
+msgstr "Помилка"
+
+msgid "Details"
+msgstr "Деталі"
+
+msgid "No recent publication failures"
+msgstr "Невдалих публікацій немає"
+
+msgid "Database"
+msgstr "База даних"
+
+msgid "PostgreSQL connection"
+msgstr "Підключення до PostgreSQL"
+
+msgid "Redis"
+msgstr "Redis"
+
+msgid "Celery broker connection"
+msgstr "Брокер задач Celery"
+
+msgid "Celery workers"
+msgstr "Воркери Celery"
+
+msgid "At least one worker responds to ping"
+msgstr "Хоча б один воркер відповідає на ping"
+
+msgid "Celery beat"
+msgstr "Планувальник Celery beat"
+
+msgid "Scheduler heartbeat within the last 3 minutes"
+msgstr "Сигнал від планувальника за останні 3 хвилини"
+
+msgid "Authorization"
+msgstr "Авторизація"
+
+msgid "Timeouts"
+msgstr "Таймаути"
+
+msgid "Unknown outcome"
+msgstr "Результат невідомий"
+
+msgid "Other"
+msgstr "Інше"
+
+#, python-format
+msgid "%(rate)s%% successful"
+msgstr "%(rate)s%% успішних"
+
+#, python-format
+msgid "of %(total)s finished"
+msgstr "з %(total)s завершених"
+
+#, python-format
+msgid "%(counter)s service needs attention"
+msgid_plural "%(counter)s services need attention"
+msgstr[0] "%(counter)s сервіс потребує уваги"
+msgstr[1] "%(counter)s сервіси потребують уваги"
+msgstr[2] "%(counter)s сервісів потребують уваги"
+msgstr[3] "%(counter)s сервісів потребують уваги"
+
+#, python-format
+msgid "%(counter)s failure"
+msgid_plural "%(counter)s failures"
+msgstr[0] "%(counter)s помилка"
+msgstr[1] "%(counter)s помилки"
+msgstr[2] "%(counter)s помилок"
+msgstr[3] "%(counter)s помилок"
+
+msgid "Board"
+msgstr "Дошка"
+
+msgid "Board refresh started for {} account(s)."
+msgstr "Оновлення дошок запущено для акаунтів: {}."
+
+msgid ""
+"Boards of active accounts. Use \"Refresh boards\" on the account list if a "
+"board is missing."
+msgstr ""
+"Дошки активних акаунтів. Якщо потрібної дошки немає, запустіть «Оновити "
+"дошки» у списку акаунтів."
+
+msgid "Could not start the board refresh task. Check the Celery worker."
+msgstr "Не вдалося запустити оновлення дошок. Перевірте Celery worker."
+
+msgid ""
+"Include the scheme, e.g. http://user:pass@host:port or socks5://host:port."
+msgstr ""
+"Вкажіть схему, наприклад http://user:pass@host:port або socks5://host:port."
+
+msgid ""
+"Leave empty to keep the current cookies. New cookies are checked with "
+"Pinterest and reactivate the account."
+msgstr ""
+"Залиште порожнім, щоб зберегти поточні cookies. Нові cookies перевіряються в"
+" Pinterest і знову активують акаунт."
+
+msgid ""
+"Paste the export from a browser extension (JSON), a \"name=value; ...\" "
+"Cookie header or a cookies.txt file. csrftoken and _pinterest_sess are "
+"required."
+msgstr ""
+"Вставте експорт з розширення браузера (JSON), заголовок Cookie виду "
+"«name=value; ...» або файл cookies.txt. Обов'язкові csrftoken і "
+"_pinterest_sess."
+
+#, python-format
+msgid "Pinterest allows at most %(limit)s characters in a title."
+msgstr "Pinterest дозволяє не більше %(limit)s символів у заголовку."
+
+msgid ""
+"Pinterest could not load the boards. Check that the name is the Pinterest "
+"username."
+msgstr ""
+"Pinterest не зміг завантажити дошки. Перевірте, що назва збігається з іменем"
+" користувача Pinterest."
+
+msgid ""
+"Pinterest rejected these cookies. Log in to pinterest.com again and export "
+"fresh cookies."
+msgstr ""
+"Pinterest відхилив ці cookies. Увійдіть у pinterest.com знову та експортуйте"
+" свіжі cookies."
+
+msgid ""
+"Pinterest returned no boards. Check that the name is the Pinterest username "
+"and that the account has at least one board."
+msgstr ""
+"Pinterest не повернув жодної дошки. Перевірте, що назва збігається з іменем "
+"користувача Pinterest і що в акаунта є хоча б одна дошка."
+
+msgid ""
+"Pinterest username, as in pinterest.com/<username>/. It is used to load the "
+"boards."
+msgstr ""
+"Ім'я користувача Pinterest, як у pinterest.com/<username>/. За ним "
+"завантажуються дошки."
+
+msgid ""
+"The task was saved but could not be queued. Check Redis and the Celery "
+"worker."
+msgstr ""
+"Задачу збережено, але не поставлено в чергу. Перевірте Redis і Celery "
+"worker."
+
+msgid "Webhook URL"
+msgstr "Webhook URL"
+
+msgid "Proxy type"
+msgstr "Тип проксі"
+
+msgid "Replaces the scheme if the proxy below is a full URL."
+msgstr "Замінює схему, якщо нижче вказано повний URL проксі."
+
+msgid "SOCKS5 (DNS through the proxy)"
+msgstr "SOCKS5 (DNS через проксі)"
+
+msgid ""
+"host:port, host:port:user:password, user:password@host:port or a full URL."
+msgstr ""
+"host:port, host:port:логін:пароль, логін:пароль@host:port або повний URL."

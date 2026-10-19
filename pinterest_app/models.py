@@ -52,6 +52,12 @@ class PinPublishTask(models.Model):
     status = models.CharField(_("Status"), max_length=20, choices=STATUS_CHOICES, default='PENDING')
     error_json = models.JSONField(_("Error JSON"), blank=True, null=True)
     celery_task_id = models.CharField(_("Celery Task ID"), max_length=255, blank=True, null=True)
+    status_token = models.UUIDField(_("Status token"), default=uuid.uuid4, unique=True, editable=False)
+    idempotency_key = models.CharField(_("Idempotency key"), max_length=255, blank=True, null=True)
+    request_fingerprint = models.CharField(_("Request fingerprint"), max_length=64, blank=True, null=True)
+    response_status_code = models.PositiveSmallIntegerField(blank=True, null=True)
+    response_content_type = models.CharField(max_length=255, blank=True, null=True)
+    response_body = models.BinaryField(blank=True, null=True)
 
     created_at = models.DateTimeField(_("Created at"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated at"), auto_now=True)
@@ -62,3 +68,25 @@ class PinPublishTask(models.Model):
     class Meta:
         verbose_name = _("Pin Publish Task")
         verbose_name_plural = _("Pin Publish Tasks")
+        constraints = [
+            models.UniqueConstraint(
+                fields=("account", "idempotency_key"),
+                condition=models.Q(idempotency_key__isnull=False),
+                name="unique_account_idempotency_key",
+            ),
+        ]
+
+
+class SystemAlertState(models.Model):
+    key = models.CharField(_("Alert key"), max_length=255, primary_key=True)
+    is_active = models.BooleanField(_("Is active"), default=False)
+    last_notified_at = models.DateTimeField(_("Last notified at"), blank=True, null=True)
+    payload = models.JSONField(_("Payload"), blank=True, null=True)
+    updated_at = models.DateTimeField(_("Updated at"), auto_now=True)
+
+    class Meta:
+        verbose_name = _("System Alert State")
+        verbose_name_plural = _("System Alert States")
+
+    def __str__(self):
+        return self.key

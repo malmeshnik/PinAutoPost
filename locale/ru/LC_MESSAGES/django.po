@@ -15,8 +15,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
 #: pinterest_app/admin.py:21
 msgid "Refresh boards for selected accounts"
@@ -25,7 +24,9 @@ msgstr "Обновить доски для выбранных аккаунтов
 #: pinterest_app/admin.py:32
 msgid ""
 "Task to refresh boards for {} accounts successfully started in background."
-msgstr "Задание на обновление досок для {} аккаунтов успешно запущено в фоновом режиме."
+msgstr ""
+"Задание на обновление досок для {} аккаунтов успешно запущено в фоновом "
+"режиме."
 
 #: pinterest_app/admin.py:70 pinterest_app/models.py:52
 msgid "Status"
@@ -49,7 +50,7 @@ msgstr "Название"
 
 #: pinterest_app/models.py:9
 msgid "Cookies"
-msgstr "Куки"
+msgstr "Cookies"
 
 #: pinterest_app/models.py:9
 msgid "Original cookies array from browser extension"
@@ -160,8 +161,10 @@ msgid "Pin Publish Tasks"
 msgstr "Задачи публикации пинов"
 
 #: pinterest_app/views.py:29
-msgid "Proxy is unavailable or invalid. Check format: http://user:pass@ip:port"
-msgstr "Прокси недоступен или невалиден. Проверьте формат: http://user:pass@ip:port"
+msgid ""
+"Proxy is unavailable or invalid. Check format: http://user:pass@ip:port"
+msgstr ""
+"Прокси недоступен или невалиден. Проверьте формат: http://user:pass@ip:port"
 
 #: pinterest_app/views.py:33
 msgid "Cookies are required for account creation"
@@ -177,9 +180,11 @@ msgstr "Куки должны быть массивом или объектом 
 
 #: pinterest_app/views.py:55
 msgid ""
-"Account created, but failed to retrieve boards. Check cookies and try again. "
-"Account deactivated."
-msgstr "Аккаунт создан, но не удалось получить доски. Проверьте куки и попробуйте еще раз. Аккаунт деактивирован."
+"Account created, but failed to retrieve boards. Check cookies and try again."
+" Account deactivated."
+msgstr ""
+"Аккаунт создан, но не удалось получить доски. Проверьте куки и попробуйте "
+"еще раз. Аккаунт деактивирован."
 
 #: pinterest_app/views.py:65
 msgid "Error during account validation: {}. Account deactivated."
@@ -220,3 +225,251 @@ msgstr "Аккаунты"
 #: pinterest_poster/settings.py:172
 msgid "Tasks"
 msgstr "Задачи"
+
+msgid "Overview"
+msgstr "Обзор"
+
+msgid "Today"
+msgstr "Сегодня"
+
+msgid "Key metrics"
+msgstr "Ключевые показатели"
+
+msgid "Monitor is not reporting"
+msgstr "Монитор не отвечает"
+
+msgid "All systems operational"
+msgstr "Все системы работают"
+
+msgid "Published today"
+msgstr "Опубликовано сегодня"
+
+msgid "success rate"
+msgstr "успешных"
+
+msgid "No finished publications yet"
+msgstr "Завершённых публикаций пока нет"
+
+msgid "Failed today"
+msgstr "Ошибок сегодня"
+
+msgid "See the breakdown below"
+msgstr "Разбивка по причинам ниже"
+
+msgid "No failures today"
+msgstr "Сегодня без ошибок"
+
+msgid "In queue"
+msgstr "В очереди"
+
+msgid "pending"
+msgstr "ожидают"
+
+msgid "processing"
+msgstr "в работе"
+
+msgid "Pinterest accounts"
+msgstr "Аккаунты Pinterest"
+
+msgid "active"
+msgstr "активных"
+
+msgid "inactive"
+msgstr "неактивных"
+
+msgid "System health"
+msgstr "Состояние системы"
+
+msgid "Checked"
+msgstr "Проверено в"
+
+msgid ""
+"The health monitor has not reported for more than 3 minutes. Start it with"
+msgstr "Монитор не присылал данные больше 3 минут. Запустите его командой"
+
+msgid "Operational"
+msgstr "Работает"
+
+msgid "Down"
+msgstr "Сбой"
+
+msgid "Unknown"
+msgstr "Нет данных"
+
+msgid "Failures today by cause"
+msgstr "Ошибки сегодня по причинам"
+
+msgid "No failed publications today"
+msgstr "Сегодня ошибок публикации не было"
+
+msgid "Recent failed publications"
+msgstr "Последние неудачные публикации"
+
+msgid "All failed tasks"
+msgstr "Все ошибки"
+
+msgid "Time"
+msgstr "Время"
+
+msgid "Pin"
+msgstr "Пин"
+
+msgid "Error"
+msgstr "Ошибка"
+
+msgid "Details"
+msgstr "Подробности"
+
+msgid "No recent publication failures"
+msgstr "Неудачных публикаций нет"
+
+msgid "Database"
+msgstr "База данных"
+
+msgid "PostgreSQL connection"
+msgstr "Подключение к PostgreSQL"
+
+msgid "Redis"
+msgstr "Redis"
+
+msgid "Celery broker connection"
+msgstr "Брокер задач Celery"
+
+msgid "Celery workers"
+msgstr "Воркеры Celery"
+
+msgid "At least one worker responds to ping"
+msgstr "Хотя бы один воркер отвечает на ping"
+
+msgid "Celery beat"
+msgstr "Планировщик Celery beat"
+
+msgid "Scheduler heartbeat within the last 3 minutes"
+msgstr "Сигнал от планировщика за последние 3 минуты"
+
+msgid "Authorization"
+msgstr "Авторизация"
+
+msgid "Timeouts"
+msgstr "Таймауты"
+
+msgid "Unknown outcome"
+msgstr "Результат неизвестен"
+
+msgid "Other"
+msgstr "Другое"
+
+#, python-format
+msgid "%(rate)s%% successful"
+msgstr "%(rate)s%% успешных"
+
+#, python-format
+msgid "of %(total)s finished"
+msgstr "из %(total)s завершённых"
+
+#, python-format
+msgid "%(counter)s service needs attention"
+msgid_plural "%(counter)s services need attention"
+msgstr[0] "%(counter)s сервис требует внимания"
+msgstr[1] "%(counter)s сервиса требуют внимания"
+msgstr[2] "%(counter)s сервисов требуют внимания"
+
+#, python-format
+msgid "%(counter)s failure"
+msgid_plural "%(counter)s failures"
+msgstr[0] "%(counter)s ошибка"
+msgstr[1] "%(counter)s ошибки"
+msgstr[2] "%(counter)s ошибок"
+
+msgid "Board"
+msgstr "Доска"
+
+msgid "Board refresh started for {} account(s)."
+msgstr "Обновление досок запущено для аккаунтов: {}."
+
+msgid ""
+"Boards of active accounts. Use \"Refresh boards\" on the account list if a "
+"board is missing."
+msgstr ""
+"Доски активных аккаунтов. Если нужной доски нет, запустите «Обновить доски» "
+"в списке аккаунтов."
+
+msgid "Could not start the board refresh task. Check the Celery worker."
+msgstr "Не удалось запустить обновление досок. Проверьте Celery worker."
+
+msgid ""
+"Include the scheme, e.g. http://user:pass@host:port or socks5://host:port."
+msgstr ""
+"Укажите схему, например http://user:pass@host:port или socks5://host:port."
+
+msgid ""
+"Leave empty to keep the current cookies. New cookies are checked with "
+"Pinterest and reactivate the account."
+msgstr ""
+"Оставьте пустым, чтобы сохранить текущие cookies. Новые cookies проверяются "
+"в Pinterest и снова активируют аккаунт."
+
+msgid ""
+"Paste the export from a browser extension (JSON), a \"name=value; ...\" "
+"Cookie header or a cookies.txt file. csrftoken and _pinterest_sess are "
+"required."
+msgstr ""
+"Вставьте экспорт из расширения браузера (JSON), заголовок Cookie вида "
+"«name=value; ...» или файл cookies.txt. Обязательны csrftoken и "
+"_pinterest_sess."
+
+#, python-format
+msgid "Pinterest allows at most %(limit)s characters in a title."
+msgstr "Pinterest допускает не более %(limit)s символов в заголовке."
+
+msgid ""
+"Pinterest could not load the boards. Check that the name is the Pinterest "
+"username."
+msgstr ""
+"Pinterest не смог загрузить доски. Проверьте, что имя совпадает с именем "
+"пользователя Pinterest."
+
+msgid ""
+"Pinterest rejected these cookies. Log in to pinterest.com again and export "
+"fresh cookies."
+msgstr ""
+"Pinterest отклонил эти cookies. Войдите в pinterest.com заново и "
+"экспортируйте свежие cookies."
+
+msgid ""
+"Pinterest returned no boards. Check that the name is the Pinterest username "
+"and that the account has at least one board."
+msgstr ""
+"Pinterest не вернул ни одной доски. Проверьте, что имя совпадает с именем "
+"пользователя Pinterest и что у аккаунта есть хотя бы одна доска."
+
+msgid ""
+"Pinterest username, as in pinterest.com/<username>/. It is used to load the "
+"boards."
+msgstr ""
+"Имя пользователя Pinterest, как в pinterest.com/<username>/. По нему "
+"загружаются доски."
+
+msgid ""
+"The task was saved but could not be queued. Check Redis and the Celery "
+"worker."
+msgstr ""
+"Задача сохранена, но не поставлена в очередь. Проверьте Redis и Celery "
+"worker."
+
+msgid "Webhook URL"
+msgstr "Webhook URL"
+
+msgid "Proxy type"
+msgstr "Тип прокси"
+
+msgid "Replaces the scheme if the proxy below is a full URL."
+msgstr "Заменяет схему, если ниже указан полный URL прокси."
+
+msgid "SOCKS5 (DNS through the proxy)"
+msgstr "SOCKS5 (DNS через прокси)"
+
+msgid ""
+"host:port, host:port:user:password, user:password@host:port or a full URL."
+msgstr ""
+"host:port, host:port:логин:пароль, логин:пароль@host:port или полный URL."

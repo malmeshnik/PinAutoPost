@@ -1,17 +1,25 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-default-key')
+DEBUG = os.getenv('DJANGO_DEBUG', 'False').strip().lower() == 'true'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    if not DEBUG:
+        raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DEBUG is disabled.")
+    SECRET_KEY = 'development-only-insecure-key'
 
-DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
-
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    if host.strip()
+]
 
 INSTALLED_APPS = [
     'unfold',
@@ -22,12 +30,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'django_celery_beat',
     'pinterest_app',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    # Serves static files when DEBUG is off (runserver does not).
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'pinterest_app.middleware.TimezoneMiddleware',
@@ -111,6 +122,8 @@ LOCALE_PATHS = [
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+# Lets WhiteNoise serve app static files without a collectstatic step.
+WHITENOISE_USE_FINDERS = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -119,9 +132,15 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        # Integrations send "Authorization: Token <key>".
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ],
+    'DEFAULT_THROTTLE_RATES': {
+        # Only views that opt in with throttle_scope are limited.
+        'auth_token': '10/min',
+    },
 }
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -134,7 +153,7 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
-CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', 'False') == 'True'
+CELERY_TASK_ALWAYS_EAGER = os.getenv('CELERY_TASK_ALWAYS_EAGER', 'False').strip().lower() == 'true'
 
 from celery.schedules import crontab
 
@@ -143,36 +162,21 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'pinterest_app.tasks.refresh_all_accounts_boards_task',
         'schedule': crontab(hour=0, minute=0),
     },
+    # The health monitor itself runs as `manage.py monitor_system_health`.
+    'celery-beat-heartbeat': {
+        'task': 'pinterest_app.tasks.record_beat_heartbeat_task',
+        'schedule': crontab(minute='*/1'),
+    },
 }
 
 # Unfold Configuration
-from django.urls import reverse_lazy
+from django.templatetags.static import static
 
 UNFOLD = {
     "SITE_TITLE": _("PinAutoPost Admin"),
     "SITE_HEADER": _("PinAutoPost"),
     "SCRIPTS": [
-        lambda request: "/static/js/timezone.js",
+        lambda request: static("pinterest_app/js/timezone.js"),
     ],
-    "DASHBOARD": {
-        "template": "admin/dashboard.html",
-        "config": "pinterest_app.dashboard.dashboard_callback",
-        "navigation": [
-            {
-                "title": _("Dashboard"),
-                "link": reverse_lazy("admin:index"),
-                "icon": "dashboard",
-            },
-            {
-                "title": _("Accounts"),
-                "link": reverse_lazy("admin:pinterest_app_pinterestaccount_changelist"),
-                "icon": "person",
-            },
-            {
-                "title": _("Tasks"),
-                "link": reverse_lazy("admin:pinterest_app_pinpublishtask_changelist"),
-                "icon": "task",
-            },
-        ],
-    },
+    "DASHBOARD_CALLBACK": "pinterest_app.dashboard.dashboard_callback",
 }

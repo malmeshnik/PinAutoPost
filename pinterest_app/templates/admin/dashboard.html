@@ -1,57 +1,303 @@
-{% extends "unfold/layouts/skeleton.html" %}
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Overview" %} | {{ site_title|default:_("Django site admin") }}{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .pap-dash {
+        --pap-surface: #ffffff;
+        --pap-surface-muted: #f8fafc;
+        --pap-border: #e5e7eb;
+        --pap-ink: #111827;
+        --pap-ink-2: #4b5563;
+        --pap-ink-3: #6b7280;
+        --pap-track: #eef2f7;
+        --pap-accent: rgb(var(--color-primary-600, 147 51 234));
+        --pap-good: #0ca30c;
+        --pap-warning: #fab219;
+        --pap-serious: #ec835a;
+        --pap-critical: #d03b3b;
+        --pap-neutral: #9ca3af;
+        --pap-good-soft: rgba(12, 163, 12, .10);
+        --pap-critical-soft: rgba(208, 59, 59, .10);
+        --pap-warning-soft: rgba(250, 178, 25, .14);
+        --pap-neutral-soft: rgba(156, 163, 175, .14);
+        color: var(--pap-ink-2);
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        padding-bottom: 32px;
+    }
+    html.dark .pap-dash {
+        --pap-surface: #1f2937;
+        --pap-surface-muted: #18212f;
+        --pap-border: #2d3748;
+        --pap-ink: #f3f4f6;
+        --pap-ink-2: #c4cad4;
+        --pap-ink-3: #9aa3b2;
+        --pap-track: #2b3546;
+        --pap-good-soft: rgba(12, 163, 12, .18);
+        --pap-critical-soft: rgba(208, 59, 59, .20);
+        --pap-warning-soft: rgba(250, 178, 25, .16);
+        --pap-neutral-soft: rgba(156, 163, 175, .16);
+    }
+    .pap-dash .material-symbols-outlined { font-size: 20px; line-height: 1; }
+
+    .pap-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+    .pap-head h1 { color: var(--pap-ink); font-size: 24px; font-weight: 600; margin: 0; }
+    .pap-head p { color: var(--pap-ink-3); font-size: 14px; margin: 4px 0 0; }
+
+    .pap-pill {
+        align-items: center; border-radius: 999px; display: inline-flex; font-size: 13px;
+        font-weight: 600; gap: 6px; padding: 6px 12px; color: var(--pap-ink);
+    }
+    .pap-pill--good { background: var(--pap-good-soft); }
+    .pap-pill--good .material-symbols-outlined { color: var(--pap-good); }
+    .pap-pill--critical { background: var(--pap-critical-soft); }
+    .pap-pill--critical .material-symbols-outlined { color: var(--pap-critical); }
+    .pap-pill--warning { background: var(--pap-warning-soft); }
+    .pap-pill--warning .material-symbols-outlined { color: var(--pap-warning); }
+
+    .pap-kpis { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .pap-card {
+        background: var(--pap-surface); border: 1px solid var(--pap-border);
+        border-radius: 12px; min-width: 0;
+    }
+    .pap-tile { display: flex; flex-direction: column; gap: 8px; padding: 20px; text-decoration: none; transition: border-color .15s; }
+    a.pap-tile:hover { border-color: var(--pap-accent); }
+    .pap-tile__label { align-items: center; color: var(--pap-ink-3); display: flex; font-size: 13px; font-weight: 500; gap: 8px; }
+    .pap-tile__value { color: var(--pap-ink); font-size: 32px; font-weight: 600; letter-spacing: -.02em; line-height: 1.1; }
+    .pap-tile__meta { color: var(--pap-ink-3); display: flex; flex-wrap: wrap; font-size: 13px; gap: 4px 12px; }
+    .pap-tile__meta b { color: var(--pap-ink); font-weight: 600; }
+
+    .pap-meter { background: var(--pap-track); border-radius: 999px; height: 6px; overflow: hidden; }
+    .pap-meter > span { background: var(--pap-good); border-radius: 999px; display: block; height: 100%; }
+
+    .pap-dot { border-radius: 999px; display: inline-block; flex: none; height: 8px; width: 8px; }
+    .pap-dot--good { background: var(--pap-good); }
+    .pap-dot--warning { background: var(--pap-warning); }
+    .pap-dot--serious { background: var(--pap-serious); }
+    .pap-dot--critical { background: var(--pap-critical); }
+    .pap-dot--neutral { background: var(--pap-neutral); }
+
+    .pap-columns { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .pap-section__head {
+        align-items: center; border-bottom: 1px solid var(--pap-border); display: flex;
+        gap: 12px; justify-content: space-between; padding: 16px 20px;
+    }
+    .pap-section__head h2 { color: var(--pap-ink); font-size: 15px; font-weight: 600; margin: 0; }
+    .pap-section__head small { color: var(--pap-ink-3); font-size: 12px; }
+    .pap-link { color: var(--pap-accent); font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap; }
+    .pap-link:hover { text-decoration: underline; }
+
+    .pap-list { list-style: none; margin: 0; padding: 4px 0; }
+    .pap-row { align-items: center; display: flex; gap: 12px; padding: 12px 20px; }
+    .pap-row + .pap-row { border-top: 1px solid var(--pap-border); }
+    .pap-row__icon {
+        align-items: center; border-radius: 8px; display: inline-flex; flex: none;
+        height: 32px; justify-content: center; width: 32px;
+    }
+    .pap-row__icon--ok { background: var(--pap-good-soft); color: var(--pap-good); }
+    .pap-row__icon--issue { background: var(--pap-critical-soft); color: var(--pap-critical); }
+    .pap-row__icon--unknown { background: var(--pap-neutral-soft); color: var(--pap-ink-3); }
+    .pap-row__body { flex: 1; min-width: 0; }
+    .pap-row__title { color: var(--pap-ink); font-size: 14px; font-weight: 500; }
+    .pap-row__detail { color: var(--pap-ink-3); font-size: 12px; margin-top: 2px; }
+    .pap-row__state { color: var(--pap-ink-2); font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+    .pap-notice {
+        align-items: flex-start; background: var(--pap-warning-soft); border-radius: 8px;
+        color: var(--pap-ink); display: flex; font-size: 13px; gap: 8px; margin: 12px 20px 16px; padding: 10px 12px;
+    }
+    .pap-notice .material-symbols-outlined { color: var(--pap-warning); }
+    .pap-notice code { font-size: 12px; }
+
+    .pap-bars { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px 20px; }
+    .pap-bar__top { align-items: center; display: flex; font-size: 13px; gap: 8px; margin-bottom: 6px; }
+    .pap-bar__label { color: var(--pap-ink-2); flex: 1; }
+    .pap-bar__count { color: var(--pap-ink); font-variant-numeric: tabular-nums; font-weight: 600; }
+    .pap-bar__track { background: var(--pap-track); border-radius: 4px; height: 6px; overflow: hidden; }
+    .pap-bar__fill { border-radius: 4px; display: block; height: 100%; min-width: 0; }
+    .pap-bar__fill--critical { background: var(--pap-critical); }
+    .pap-bar__fill--serious { background: var(--pap-serious); }
+    .pap-bar__fill--warning { background: var(--pap-warning); }
+    .pap-bar__fill--neutral { background: var(--pap-neutral); }
+
+    .pap-empty { align-items: center; color: var(--pap-ink-3); display: flex; flex-direction: column; font-size: 14px; gap: 8px; padding: 32px 20px; text-align: center; }
+    .pap-empty .material-symbols-outlined { color: var(--pap-good); font-size: 28px; }
+
+    .pap-table-wrap { overflow-x: auto; }
+    .pap-table { border-collapse: collapse; font-size: 13px; min-width: 760px; width: 100%; }
+    .pap-table th {
+        background: var(--pap-surface-muted); color: var(--pap-ink-3); font-size: 12px; font-weight: 500;
+        padding: 10px 20px; text-align: left; white-space: nowrap;
+    }
+    .pap-table td { border-top: 1px solid var(--pap-border); color: var(--pap-ink-2); padding: 12px 20px; vertical-align: top; }
+    .pap-table td.pap-num { color: var(--pap-ink-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .pap-table td.pap-strong { color: var(--pap-ink); font-weight: 500; }
+    .pap-table .pap-msg { display: -webkit-box; max-width: 520px; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+    .pap-badge {
+        align-items: center; background: var(--pap-critical-soft); border-radius: 6px; color: var(--pap-ink);
+        display: inline-flex; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;
+        gap: 6px; padding: 2px 8px; white-space: nowrap;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    {% for metric in metrics %}
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
-        <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4 dark:text-gray-400">{{ metric.title }}</h3>
+<div class="pap-dash">
+    <header class="pap-head">
+        <div>
+            <h1>{% translate "Overview" %}</h1>
+            <p>{% translate "Today" %}, {% now "j E Y" %}</p>
+        </div>
+        {% if dashboard.show_health %}
+            {% if dashboard.health_stale %}
+            <span class="pap-pill pap-pill--warning"><span class="material-symbols-outlined">help</span>{% translate "Monitor is not reporting" %}</span>
+            {% elif dashboard.health_issues %}
+            <span class="pap-pill pap-pill--critical"><span class="material-symbols-outlined">error</span>{% blocktranslate count counter=dashboard.health_issues %}{{ counter }} service needs attention{% plural %}{{ counter }} services need attention{% endblocktranslate %}</span>
+            {% else %}
+            <span class="pap-pill pap-pill--good"><span class="material-symbols-outlined">check_circle</span>{% translate "All systems operational" %}</span>
+            {% endif %}
+        {% endif %}
+    </header>
 
-        {% if metric.title == "Accounts" %}
-        <div class="flex justify-between items-end">
-            <div>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ metric.total }}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Total accounts</p>
+    <section class="pap-kpis" aria-label="{% translate 'Key metrics' %}">
+        <a class="pap-card pap-tile" href="{{ dashboard.today.success_url }}">
+            <span class="pap-tile__label"><span class="material-symbols-outlined">task_alt</span>{% translate "Published today" %}</span>
+            <span class="pap-tile__value">{{ dashboard.today.success }}</span>
+            {% if dashboard.today.success_rate is not None %}
+            <div class="pap-meter" role="img" aria-label="{% blocktranslate with rate=dashboard.today.success_rate %}{{ rate }}% successful{% endblocktranslate %}"><span style="width: {{ dashboard.today.success_rate }}%"></span></div>
+            <span class="pap-tile__meta"><span><b>{{ dashboard.today.success_rate }}%</b> {% translate "success rate" %}</span><span>{% blocktranslate with total=dashboard.today.total %}of {{ total }} finished{% endblocktranslate %}</span></span>
+            {% else %}
+            <span class="pap-tile__meta">{% translate "No finished publications yet" %}</span>
+            {% endif %}
+        </a>
+
+        <a class="pap-card pap-tile" href="{{ dashboard.today.url }}">
+            <span class="pap-tile__label">
+                <span class="pap-dot {% if dashboard.today.failed %}pap-dot--critical{% else %}pap-dot--good{% endif %}"></span>{% translate "Failed today" %}
+            </span>
+            <span class="pap-tile__value">{{ dashboard.today.failed }}</span>
+            <span class="pap-tile__meta">{% if dashboard.today.failed %}{% translate "See the breakdown below" %}{% else %}{% translate "No failures today" %}{% endif %}</span>
+        </a>
+
+        <a class="pap-card pap-tile" href="{{ dashboard.queue.url }}">
+            <span class="pap-tile__label"><span class="material-symbols-outlined">pending_actions</span>{% translate "In queue" %}</span>
+            <span class="pap-tile__value">{{ dashboard.queue.total }}</span>
+            <span class="pap-tile__meta">
+                <span><b>{{ dashboard.queue.pending }}</b> {% translate "pending" %}</span>
+                <span><b>{{ dashboard.queue.processing }}</b> {% translate "processing" %}</span>
+            </span>
+        </a>
+
+        <a class="pap-card pap-tile" href="{{ dashboard.accounts.url }}">
+            <span class="pap-tile__label"><span class="material-symbols-outlined">group</span>{% translate "Pinterest accounts" %}</span>
+            <span class="pap-tile__value">{{ dashboard.accounts.total }}</span>
+            <span class="pap-tile__meta">
+                <span><span class="pap-dot pap-dot--good"></span> <b>{{ dashboard.accounts.active }}</b> {% translate "active" %}</span>
+                <span><span class="pap-dot {% if dashboard.accounts.inactive %}pap-dot--warning{% else %}pap-dot--neutral{% endif %}"></span> <b>{{ dashboard.accounts.inactive }}</b> {% translate "inactive" %}</span>
+            </span>
+        </a>
+    </section>
+
+    <div class="pap-columns">
+        {% if dashboard.show_health %}
+        <section class="pap-card">
+            <div class="pap-section__head">
+                <h2>{% translate "System health" %}</h2>
+                {% if dashboard.health_checked_at %}<small>{% translate "Checked" %} {{ dashboard.health_checked_at|date:"H:i:s" }}</small>{% endif %}
             </div>
-            <div class="text-right">
-                <p class="text-sm font-medium text-green-600">{{ metric.active }} Active</p>
-                <p class="text-sm font-medium text-red-600">{{ metric.inactive }} Inactive</p>
+            {% if dashboard.health_stale %}
+            <div class="pap-notice">
+                <span class="material-symbols-outlined">warning</span>
+                <span>{% translate "The health monitor has not reported for more than 3 minutes. Start it with" %} <code>python manage.py monitor_system_health</code>.</span>
             </div>
+            {% endif %}
+            <ul class="pap-list">
+                {% for component in dashboard.health %}
+                <li class="pap-row">
+                    <span class="pap-row__icon pap-row__icon--{{ component.state }}">
+                        <span class="material-symbols-outlined">{% if component.state == "ok" %}check{% elif component.state == "issue" %}priority_high{% else %}question_mark{% endif %}</span>
+                    </span>
+                    <div class="pap-row__body">
+                        <div class="pap-row__title">{{ component.name }}</div>
+                        <div class="pap-row__detail">{{ component.detail }}</div>
+                    </div>
+                    <span class="pap-row__state">{% if component.state == "ok" %}{% translate "Operational" %}{% elif component.state == "issue" %}{% translate "Down" %}{% else %}{% translate "Unknown" %}{% endif %}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
+        <section class="pap-card">
+            <div class="pap-section__head">
+                <h2>{% translate "Failures today by cause" %}</h2>
+                <small>{% blocktranslate count counter=dashboard.issues_total %}{{ counter }} failure{% plural %}{{ counter }} failures{% endblocktranslate %}</small>
+            </div>
+            {% if dashboard.issues_total %}
+            <div class="pap-bars">
+                {% for issue in dashboard.issues %}
+                <div>
+                    <div class="pap-bar__top">
+                        <span class="pap-dot pap-dot--{{ issue.tone }}"></span>
+                        <span class="pap-bar__label">{{ issue.label }}{% if issue.code %} <span style="opacity:.6">· {{ issue.code }}</span>{% endif %}</span>
+                        <span class="pap-bar__count">{{ issue.count }}</span>
+                    </div>
+                    <div class="pap-bar__track"><span class="pap-bar__fill pap-bar__fill--{{ issue.tone }}" style="width: {% widthratio issue.count dashboard.issues_total 100 %}%"></span></div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="pap-empty">
+                <span class="material-symbols-outlined">verified</span>
+                {% translate "No failed publications today" %}
+            </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <section class="pap-card">
+        <div class="pap-section__head">
+            <h2>{% translate "Recent failed publications" %}</h2>
+            <a class="pap-link" href="{{ dashboard.tasks_url }}?status__exact=FAILED">{% translate "All failed tasks" %} →</a>
         </div>
-        {% elif metric.title == "Queue" %}
-        <div class="flex justify-between items-end">
-            <div>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ metric.total }}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Tasks in queue</p>
-            </div>
-            <div class="text-right">
-                <p class="text-sm font-medium text-blue-600">{{ metric.pending }} Pending</p>
-                <p class="text-sm font-medium text-yellow-600">{{ metric.processing }} Processing</p>
-            </div>
+        {% if dashboard.recent_failures %}
+        <div class="pap-table-wrap">
+            <table class="pap-table">
+                <thead>
+                    <tr>
+                        <th>{% translate "Time" %}</th>
+                        <th>{% translate "Account" %}</th>
+                        <th>{% translate "Pin" %}</th>
+                        <th>{% translate "Error" %}</th>
+                        <th>{% translate "Details" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for failure in dashboard.recent_failures %}
+                    <tr>
+                        <td class="pap-num">{{ failure.updated_at|date:"d.m H:i" }}</td>
+                        <td class="pap-strong">{{ failure.account }}</td>
+                        <td><a class="pap-link" href="{% url 'admin:pinterest_app_pinpublishtask_change' failure.id %}">#{{ failure.id }}</a>{% if failure.title %} <span>{{ failure.title|truncatechars:40 }}</span>{% endif %}</td>
+                        <td><span class="pap-badge">{{ failure.error }}</span></td>
+                        <td><span class="pap-msg" title="{{ failure.message }}">{{ failure.message }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        {% elif metric.title == "Today Performance" %}
-        <div class="flex justify-between items-end">
-            <div>
-                <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ metric.success }}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Successful today</p>
-            </div>
-            <div class="text-right">
-                <p class="text-3xl font-bold text-red-600">{{ metric.failed }}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Failed today</p>
-            </div>
-        </div>
-        {% elif metric.title == "Critical Issues Today" %}
-        <div class="flex justify-between items-end">
-            <div class="bg-red-50 p-2 rounded dark:bg-red-900/20">
-                <p class="text-xl font-bold text-red-700 dark:text-red-400">{{ metric.auth_errors }}</p>
-                <p class="text-xs text-red-600 dark:text-red-400 uppercase font-bold">Auth Errors</p>
-            </div>
-            <div class="bg-orange-50 p-2 rounded dark:bg-orange-900/20">
-                <p class="text-xl font-bold text-orange-700 dark:text-orange-400">{{ metric.proxy_errors }}</p>
-                <p class="text-xs text-orange-600 dark:text-orange-400 uppercase font-bold">Proxy Errors</p>
-            </div>
+        {% else %}
+        <div class="pap-empty">
+            <span class="material-symbols-outlined">verified</span>
+            {% translate "No recent publication failures" %}
         </div>
         {% endif %}
-    </div>
-    {% endfor %}
+    </section>
 </div>
 {% endblock %}

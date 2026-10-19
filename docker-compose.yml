@@ -7,12 +7,36 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-pinterest_db}
       - POSTGRES_USER=${POSTGRES_USER:-pinterest_user}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-pinterest_pass}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pinterest_user} -d ${POSTGRES_DB:-pinterest_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     restart: always
 
   redis:
     image: redis:7-alpine
     restart: always
     command: redis-server --requirepass ${REDIS_PASSWORD:-strong_redis_password}
+
+  migrate:
+    build: .
+    command: sh -c "python manage.py migrate --noinput && python manage.py collectstatic --noinput"
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-False}
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-pinterest_db}
+      - POSTGRES_USER=${POSTGRES_USER:-pinterest_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-pinterest_pass}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
 
   web:
     build: .
@@ -24,8 +48,8 @@ services:
       - "5678:5678"
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
-      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-*}
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-False}
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_ADMIN_CHAT_ID=${TELEGRAM_ADMIN_CHAT_ID}
       - DB_HOST=db
@@ -35,8 +59,10 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-pinterest_pass}
       - REDIS_URL=redis://:${REDIS_PASSWORD:-strong_redis_password}@redis:6379/0
     depends_on:
-      - db
-      - redis
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
     restart: always
 
   worker:
@@ -48,7 +74,9 @@ services:
       - .:/app
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-False}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_ADMIN_CHAT_ID=${TELEGRAM_ADMIN_CHAT_ID}
       - DB_HOST=db
       - DB_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB:-pinterest_db}
@@ -56,8 +84,32 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-pinterest_pass}
       - REDIS_URL=redis://:${REDIS_PASSWORD:-strong_redis_password}@redis:6379/0
     depends_on:
-      - db
-      - redis
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+    restart: always
+
+  # Health checks run outside Celery so Redis/worker outages can be detected.
+  monitor:
+    build: .
+    command: python manage.py monitor_system_health --interval 60
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-False}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_ADMIN_CHAT_ID=${TELEGRAM_ADMIN_CHAT_ID}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-pinterest_db}
+      - POSTGRES_USER=${POSTGRES_USER:-pinterest_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-pinterest_pass}
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-strong_redis_password}@redis:6379/0
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
     restart: always
 
   beat:
@@ -67,7 +119,7 @@ services:
       - .:/app
     environment:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - DJANGO_DEBUG=${DJANGO_DEBUG:-True}
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-False}
       - DB_HOST=db
       - DB_PORT=5432
       - POSTGRES_DB=${POSTGRES_DB:-pinterest_db}
@@ -75,8 +127,10 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-pinterest_pass}
       - REDIS_URL=redis://:${REDIS_PASSWORD:-strong_redis_password}@redis:6379/0
     depends_on:
-      - db
-      - redis
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
     restart: always
 
 volumes:

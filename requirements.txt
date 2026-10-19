@@ -10,3 +10,4 @@ celery
 django-unfold==0.28.0
 django-celery-beat
 debugpy
+whitenoise

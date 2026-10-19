@@ -1,22 +1,44 @@
+import os
+import uuid
+
 import requests
 
-url = "http://127.0.0.1:8008/api/v1/publish/47ff8013-c933-464b-a196-c5ee769b3ea8/"
 
-# Явно кажемо серверу, що ми хочемо отримати НАЗАД саме JSON
-headers = {
-    "Accept": "application/json",
-    "Content-Type": "application/json"
-}
+def main():
+    webhook_url = os.getenv("PUBLISH_URL")
+    image_url = os.getenv("PUBLISH_IMAGE_URL")
+    board_id = os.getenv("PUBLISH_BOARD_ID")
+    board_name = os.getenv("PUBLISH_BOARD_NAME")
+    if not webhook_url or not image_url or not (board_id or board_name):
+        raise SystemExit(
+            "Set PUBLISH_URL, PUBLISH_IMAGE_URL, and either "
+            "PUBLISH_BOARD_ID or PUBLISH_BOARD_NAME."
+        )
+    idempotency_key = os.getenv("PUBLISH_IDEMPOTENCY_KEY", str(uuid.uuid4()))
 
-data = {
-    "title": "Amazon Desk Setup Ideas",
-    "description": "Check out these amazing Amazon desk setup ideas to create a productive and stylish workspace.",
-    "image_url": "https://i.pinimg.com/736x/24/1d/94/241d9435d90279beadc1d47bafae85c7.jpg",
-    "board_name": "Amazon Desk Setup Ideas"
-}
+    payload = {
+        "title": os.getenv("PUBLISH_TITLE", ""),
+        "description": os.getenv("PUBLISH_DESCRIPTION", ""),
+        "image_url": image_url,
+    }
+    if board_id:
+        payload["board_id"] = board_id
+    else:
+        payload["board_name"] = board_name
 
-# Передаємо headers у запит
-response = requests.post(url, json=data, headers=headers)
+    response = requests.post(
+        webhook_url,
+        json=payload,
+        headers={
+            "Accept": "application/json",
+            "Idempotency-Key": idempotency_key,
+        },
+        timeout=65,
+    )
+    print(f"Idempotency-Key: {idempotency_key}")
+    print(f"Status: {response.status_code}")
+    print(response.text)
 
-print(f"Статус код: {response.status_code}")
-print(response.text)
+
+if __name__ == "__main__":
+    main()
