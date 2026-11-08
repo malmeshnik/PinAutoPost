@@ -3,8 +3,12 @@ import uuid
 
 from django import forms
 from django.contrib import admin, messages
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.http import Http404, HttpResponseRedirect
+from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django_celery_beat.models import (
@@ -20,8 +24,10 @@ from unfold.admin import ModelAdmin, TabularInline
 from unfold.decorators import display
 
 from .forms import PinPublishTaskAdminForm, PinterestAccountAdminForm
-from .models import PinterestAccount, PinterestBoard, PinPublishTask
-from .services import fail_pending_task, replace_boards
+from .analytics import refresh_account_stats, request_stats_refresh
+from .models import AccountStatistics, PinterestAccount, PinterestBoard, PinPublishTask
+from .services import PinterestServiceError, fail_pending_task, replace_boards
+from .stats_dashboard import format_number, stats_detail_context, stats_overview_context
 from .tasks import publish_pin_task, refresh_all_accounts_boards_task
 
 logger = logging.getLogger(__name__)
@@ -58,12 +64,12 @@ class PinterestBoardInline(TabularInline):
 @admin.register(PinterestAccount)
 class PinterestAccountAdmin(ModelAdmin):
     form = PinterestAccountAdminForm
-    list_display = ("name", "user", "is_active", "created_at")
+    list_display = ("name", "user", "is_active", "created_at", "statistics_link")
     list_filter = ("is_active", "user")
     search_fields = ("name", "user__username")
     readonly_fields = ("webhook_url", "created_at", "updated_at")
     inlines = (PinterestBoardInline,)
-    actions = ("refresh_boards_action",)
+    actions = ("refresh_boards_action", "refresh_stats_action")
 
     def get_fields(self, request, obj=None):
         fields = ["name", "user", "proxy_type", "proxy", "cookies_input"]
@@ -86,6 +92,24 @@ class PinterestAccountAdmin(ModelAdmin):
     def webhook_url(self, obj):
         path = reverse("publish-pin-webhook", kwargs={"webhook_token": obj.webhook_token})
         return format_html("<code>{}</code>", path)
+
+    @display(description=_("Statistics"))
+    def statistics_link(self, obj):
+        url = reverse("admin:pinterest_app_accountstatistics_change", args=[obj.pk])
+        return format_html(
+            '<a class="font-medium text-primary-600 dark:text-primary-500" href="{}">{}</a>',
+            url,
+            _("View"),
+        )
+
+    @admin.action(description=_("Refresh statistics for selected accounts"))
+    def refresh_stats_action(self, request, queryset):
+        queued = sum(request_stats_refresh(account, force=True) for account in queryset)
+        self.message_user(
+            request,
+            _("Statistics refresh started for {} account(s).").format(queued),
+            messages.SUCCESS,
+        )
 
     @admin.action(description=_("Refresh boards for selected accounts"))
     def refresh_boards_action(self, request, queryset):
@@ -237,3 +261,121 @@ class PinPublishTaskAdmin(ModelAdmin):
         if request.user.is_superuser:
             return ("status", "account")
         return ("status",)
+
+
+def _can_view_accounts(request):
+    user = request.user
+    return user.is_active and user.is_staff and (
+        user.has_perm("pinterest_app.view_pinterestaccount")
+        or user.has_perm("pinterest_app.change_pinterestaccount")
+    )
+
+
+@admin.register(AccountStatistics)
+class AccountStatisticsAdmin(ModelAdmin):
+    """
+    Read-only statistics pages: the list is the overview of all accounts and
+    the change page shows one account. Access follows the account permissions.
+    """
+
+    def get_queryset(self, request):
+        queryset = PinterestAccount.objects.all()
+        if request.user.is_superuser:
+            return queryset
+        return queryset.filter(user=request.user)
+
+    def has_module_permission(self, request):
+        return _can_view_accounts(request)
+
+    def has_view_permission(self, request, obj=None):
+        return _can_view_accounts(request)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def _context(self, request, title, **extra):
+        return {
+            **self.admin_site.each_context(request),
+            "opts": self.model._meta,
+            "title": title,
+            **extra,
+        }
+
+    def _can_refresh(self, request):
+        return request.user.has_perm("pinterest_app.change_pinterestaccount")
+
+    def changelist_view(self, request, extra_context=None):
+        if not self.has_view_permission(request):
+            raise PermissionDenied
+        if request.method == "POST":
+            # "Refresh all": queued, since many accounts would block the page.
+            if not self._can_refresh(request):
+                raise PermissionDenied
+            accounts = self.get_queryset(request).filter(is_active=True)
+            queued = sum(request_stats_refresh(account, force=True) for account in accounts)
+            self.message_user(
+                request,
+                _("Statistics refresh started for {} account(s). Reload the page in a few minutes.").format(queued),
+                messages.SUCCESS,
+            )
+            return HttpResponseRedirect(request.path)
+        context = self._context(
+            request,
+            _("Account statistics"),
+            stats=stats_overview_context(self.get_queryset(request)),
+            can_refresh=self._can_refresh(request),
+        )
+        return TemplateResponse(request, "admin/pinterest_app/stats_overview.html", context)
+
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        if not self.has_view_permission(request):
+            raise PermissionDenied
+        account = self.get_queryset(request).filter(pk=object_id).first()
+        if account is None:
+            raise Http404
+        can_refresh = self._can_refresh(request)
+        if request.method == "POST":
+            if not can_refresh:
+                raise PermissionDenied
+            self._refresh_now(request, account)
+            return HttpResponseRedirect(request.path)
+        context = self._context(
+            request,
+            _("Statistics: {}").format(account.name),
+            stats=stats_detail_context(account),
+            can_refresh=can_refresh,
+        )
+        return TemplateResponse(request, "admin/pinterest_app/stats_detail.html", context)
+
+    def _refresh_now(self, request, account):
+        """Loads the statistics in the request, so the result shows right away."""
+        # Counts as the hourly refresh, so the next publication does not repeat it.
+        PinterestAccount.objects.filter(pk=account.pk).update(stats_requested_at=timezone.now())
+        try:
+            snapshot = refresh_account_stats(account)
+        except PinterestServiceError as exc:
+            self.message_user(
+                request, _("Could not load statistics: {}").format(exc.message), messages.ERROR
+            )
+        except Exception:
+            logger.exception("Unexpected statistics refresh error for account %s.", account.id)
+            self.message_user(
+                request,
+                _("Could not load statistics because of an unexpected error. See the server log."),
+                messages.ERROR,
+            )
+        else:
+            self.message_user(
+                request,
+                _("Statistics updated: {impressions} impressions, {saves} saves.").format(
+                    impressions=format_number(snapshot.impressions),
+                    saves=format_number(snapshot.saves),
+                ),
+                messages.SUCCESS,
+            )

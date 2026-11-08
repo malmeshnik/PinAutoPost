@@ -7,145 +7,7 @@
 
 {% block extrastyle %}
 {{ block.super }}
-<style>
-    .pap-dash {
-        --pap-surface: #ffffff;
-        --pap-surface-muted: #f8fafc;
-        --pap-border: #e5e7eb;
-        --pap-ink: #111827;
-        --pap-ink-2: #4b5563;
-        --pap-ink-3: #6b7280;
-        --pap-track: #eef2f7;
-        --pap-accent: rgb(var(--color-primary-600, 147 51 234));
-        --pap-good: #0ca30c;
-        --pap-warning: #fab219;
-        --pap-serious: #ec835a;
-        --pap-critical: #d03b3b;
-        --pap-neutral: #9ca3af;
-        --pap-good-soft: rgba(12, 163, 12, .10);
-        --pap-critical-soft: rgba(208, 59, 59, .10);
-        --pap-warning-soft: rgba(250, 178, 25, .14);
-        --pap-neutral-soft: rgba(156, 163, 175, .14);
-        color: var(--pap-ink-2);
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-        padding-bottom: 32px;
-    }
-    html.dark .pap-dash {
-        --pap-surface: #1f2937;
-        --pap-surface-muted: #18212f;
-        --pap-border: #2d3748;
-        --pap-ink: #f3f4f6;
-        --pap-ink-2: #c4cad4;
-        --pap-ink-3: #9aa3b2;
-        --pap-track: #2b3546;
-        --pap-good-soft: rgba(12, 163, 12, .18);
-        --pap-critical-soft: rgba(208, 59, 59, .20);
-        --pap-warning-soft: rgba(250, 178, 25, .16);
-        --pap-neutral-soft: rgba(156, 163, 175, .16);
-    }
-    .pap-dash .material-symbols-outlined { font-size: 20px; line-height: 1; }
-
-    .pap-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
-    .pap-head h1 { color: var(--pap-ink); font-size: 24px; font-weight: 600; margin: 0; }
-    .pap-head p { color: var(--pap-ink-3); font-size: 14px; margin: 4px 0 0; }
-
-    .pap-pill {
-        align-items: center; border-radius: 999px; display: inline-flex; font-size: 13px;
-        font-weight: 600; gap: 6px; padding: 6px 12px; color: var(--pap-ink);
-    }
-    .pap-pill--good { background: var(--pap-good-soft); }
-    .pap-pill--good .material-symbols-outlined { color: var(--pap-good); }
-    .pap-pill--critical { background: var(--pap-critical-soft); }
-    .pap-pill--critical .material-symbols-outlined { color: var(--pap-critical); }
-    .pap-pill--warning { background: var(--pap-warning-soft); }
-    .pap-pill--warning .material-symbols-outlined { color: var(--pap-warning); }
-
-    .pap-kpis { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-    .pap-card {
-        background: var(--pap-surface); border: 1px solid var(--pap-border);
-        border-radius: 12px; min-width: 0;
-    }
-    .pap-tile { display: flex; flex-direction: column; gap: 8px; padding: 20px; text-decoration: none; transition: border-color .15s; }
-    a.pap-tile:hover { border-color: var(--pap-accent); }
-    .pap-tile__label { align-items: center; color: var(--pap-ink-3); display: flex; font-size: 13px; font-weight: 500; gap: 8px; }
-    .pap-tile__value { color: var(--pap-ink); font-size: 32px; font-weight: 600; letter-spacing: -.02em; line-height: 1.1; }
-    .pap-tile__meta { color: var(--pap-ink-3); display: flex; flex-wrap: wrap; font-size: 13px; gap: 4px 12px; }
-    .pap-tile__meta b { color: var(--pap-ink); font-weight: 600; }
-
-    .pap-meter { background: var(--pap-track); border-radius: 999px; height: 6px; overflow: hidden; }
-    .pap-meter > span { background: var(--pap-good); border-radius: 999px; display: block; height: 100%; }
-
-    .pap-dot { border-radius: 999px; display: inline-block; flex: none; height: 8px; width: 8px; }
-    .pap-dot--good { background: var(--pap-good); }
-    .pap-dot--warning { background: var(--pap-warning); }
-    .pap-dot--serious { background: var(--pap-serious); }
-    .pap-dot--critical { background: var(--pap-critical); }
-    .pap-dot--neutral { background: var(--pap-neutral); }
-
-    .pap-columns { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
-    .pap-section__head {
-        align-items: center; border-bottom: 1px solid var(--pap-border); display: flex;
-        gap: 12px; justify-content: space-between; padding: 16px 20px;
-    }
-    .pap-section__head h2 { color: var(--pap-ink); font-size: 15px; font-weight: 600; margin: 0; }
-    .pap-section__head small { color: var(--pap-ink-3); font-size: 12px; }
-    .pap-link { color: var(--pap-accent); font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap; }
-    .pap-link:hover { text-decoration: underline; }
-
-    .pap-list { list-style: none; margin: 0; padding: 4px 0; }
-    .pap-row { align-items: center; display: flex; gap: 12px; padding: 12px 20px; }
-    .pap-row + .pap-row { border-top: 1px solid var(--pap-border); }
-    .pap-row__icon {
-        align-items: center; border-radius: 8px; display: inline-flex; flex: none;
-        height: 32px; justify-content: center; width: 32px;
-    }
-    .pap-row__icon--ok { background: var(--pap-good-soft); color: var(--pap-good); }
-    .pap-row__icon--issue { background: var(--pap-critical-soft); color: var(--pap-critical); }
-    .pap-row__icon--unknown { background: var(--pap-neutral-soft); color: var(--pap-ink-3); }
-    .pap-row__body { flex: 1; min-width: 0; }
-    .pap-row__title { color: var(--pap-ink); font-size: 14px; font-weight: 500; }
-    .pap-row__detail { color: var(--pap-ink-3); font-size: 12px; margin-top: 2px; }
-    .pap-row__state { color: var(--pap-ink-2); font-size: 12px; font-weight: 600; white-space: nowrap; }
-
-    .pap-notice {
-        align-items: flex-start; background: var(--pap-warning-soft); border-radius: 8px;
-        color: var(--pap-ink); display: flex; font-size: 13px; gap: 8px; margin: 12px 20px 16px; padding: 10px 12px;
-    }
-    .pap-notice .material-symbols-outlined { color: var(--pap-warning); }
-    .pap-notice code { font-size: 12px; }
-
-    .pap-bars { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px 20px; }
-    .pap-bar__top { align-items: center; display: flex; font-size: 13px; gap: 8px; margin-bottom: 6px; }
-    .pap-bar__label { color: var(--pap-ink-2); flex: 1; }
-    .pap-bar__count { color: var(--pap-ink); font-variant-numeric: tabular-nums; font-weight: 600; }
-    .pap-bar__track { background: var(--pap-track); border-radius: 4px; height: 6px; overflow: hidden; }
-    .pap-bar__fill { border-radius: 4px; display: block; height: 100%; min-width: 0; }
-    .pap-bar__fill--critical { background: var(--pap-critical); }
-    .pap-bar__fill--serious { background: var(--pap-serious); }
-    .pap-bar__fill--warning { background: var(--pap-warning); }
-    .pap-bar__fill--neutral { background: var(--pap-neutral); }
-
-    .pap-empty { align-items: center; color: var(--pap-ink-3); display: flex; flex-direction: column; font-size: 14px; gap: 8px; padding: 32px 20px; text-align: center; }
-    .pap-empty .material-symbols-outlined { color: var(--pap-good); font-size: 28px; }
-
-    .pap-table-wrap { overflow-x: auto; }
-    .pap-table { border-collapse: collapse; font-size: 13px; min-width: 760px; width: 100%; }
-    .pap-table th {
-        background: var(--pap-surface-muted); color: var(--pap-ink-3); font-size: 12px; font-weight: 500;
-        padding: 10px 20px; text-align: left; white-space: nowrap;
-    }
-    .pap-table td { border-top: 1px solid var(--pap-border); color: var(--pap-ink-2); padding: 12px 20px; vertical-align: top; }
-    .pap-table td.pap-num { color: var(--pap-ink-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
-    .pap-table td.pap-strong { color: var(--pap-ink); font-weight: 500; }
-    .pap-table .pap-msg { display: -webkit-box; max-width: 520px; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-    .pap-badge {
-        align-items: center; background: var(--pap-critical-soft); border-radius: 6px; color: var(--pap-ink);
-        display: inline-flex; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;
-        gap: 6px; padding: 2px 8px; white-space: nowrap;
-    }
-</style>
+{% include "admin/pinterest_app/_dash_styles.html" %}
 {% endblock %}
 
 {% block content %}
@@ -201,6 +63,15 @@
             <span class="pap-tile__meta">
                 <span><span class="pap-dot pap-dot--good"></span> <b>{{ dashboard.accounts.active }}</b> {% translate "active" %}</span>
                 <span><span class="pap-dot {% if dashboard.accounts.inactive %}pap-dot--warning{% else %}pap-dot--neutral{% endif %}"></span> <b>{{ dashboard.accounts.inactive }}</b> {% translate "inactive" %}</span>
+            </span>
+        </a>
+
+        <a class="pap-card pap-tile" href="{{ dashboard.statistics.url }}">
+            <span class="pap-tile__label"><span class="material-symbols-outlined">monitoring</span>{% translate "Impressions, 30 days" %}</span>
+            <span class="pap-tile__value">{{ dashboard.statistics.impressions }}</span>
+            <span class="pap-tile__meta">
+                <span><b>{{ dashboard.statistics.saves }}</b> {% translate "saves" %}</span>
+                <span>{% blocktranslate count counter=dashboard.statistics.accounts %}{{ counter }} account{% plural %}{{ counter }} accounts{% endblocktranslate %}</span>
             </span>
         </a>
     </section>

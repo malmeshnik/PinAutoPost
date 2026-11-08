@@ -607,7 +607,19 @@ def publish_pin_for_task(task, deadline=None):
 
     PinPublishTask.objects.filter(pk=task.pk).update(**fields)
     task.refresh_from_db()
+    if task.status == "SUCCESS":
+        _request_stats_refresh(account)
     return task
+
+
+def _request_stats_refresh(account):
+    from .analytics import request_stats_refresh
+
+    try:
+        request_stats_refresh(account)
+    except Exception:
+        # Statistics must never affect the publish result.
+        logger.warning("Could not request a statistics refresh for account %s.", account.id)
 
 
 def classify_pin_response(response):

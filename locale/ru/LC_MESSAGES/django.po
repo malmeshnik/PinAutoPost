@@ -473,3 +473,177 @@ msgid ""
 "host:port, host:port:user:password, user:password@host:port or a full URL."
 msgstr ""
 "host:port, host:port:логин:пароль, логин:пароль@host:port или полный URL."
+
+msgid "Pinterest user ID"
+msgstr "ID пользователя Pinterest"
+
+msgid "Statistics requested at"
+msgstr "Статистика запрошена"
+
+msgid "Statistics error"
+msgstr "Ошибка статистики"
+
+msgid "Period start"
+msgstr "Начало периода"
+
+msgid "Period end"
+msgstr "Конец периода"
+
+msgid "Impressions"
+msgstr "Показы"
+
+msgid "Engagements"
+msgstr "Вовлечённость"
+
+msgid "Outbound clicks"
+msgstr "Переходы на сайт"
+
+msgid "Saves"
+msgstr "Сохранения"
+
+msgid "Impressions change"
+msgstr "Изменение показов"
+
+msgid "Engagements change"
+msgstr "Изменение вовлечённости"
+
+msgid "Outbound clicks change"
+msgstr "Изменение переходов"
+
+msgid "Saves change"
+msgstr "Изменение сохранений"
+
+msgid "Data complete"
+msgstr "Данные полные"
+
+msgid "Statistics snapshot"
+msgstr "Снимок статистики"
+
+msgid "Statistics snapshots"
+msgstr "Снимки статистики"
+
+msgid "Account statistics"
+msgstr "Статистика аккаунтов"
+
+msgid "Statistics"
+msgstr "Статистика"
+
+msgid "View"
+msgstr "Открыть"
+
+msgid "Refresh statistics for selected accounts"
+msgstr "Обновить статистику выбранных аккаунтов"
+
+msgid "Statistics refresh started for {} account(s)."
+msgstr "Обновление статистики запущено для аккаунтов: {}."
+
+msgid "Statistics refresh started. Reload the page in a minute."
+msgstr "Обновление статистики запущено. Обновите страницу через минуту."
+
+msgid "Statistics: {}"
+msgstr "Статистика: {}"
+
+msgid "Last %(days)s days · %(start)s – %(end)s"
+msgstr "Последние %(days)s дней · %(start)s – %(end)s"
+
+msgid "%(loaded)s of %(total)s accounts loaded"
+msgstr "Загружено %(loaded)s из %(total)s аккаунтов"
+
+msgid "Totals for all accounts"
+msgstr "Итого по всем аккаунтам"
+
+msgid "vs previous period"
+msgstr "к прошлому периоду"
+
+msgid "No comparison yet"
+msgstr "Сравнения пока нет"
+
+msgid "By account"
+msgstr "По аккаунтам"
+
+msgid "Updated after each publication, at most once per hour, and daily"
+msgstr "Обновляется после каждой публикации (не чаще раза в час) и ежедневно"
+
+msgid "Updated"
+msgstr "Обновлено"
+
+msgid "Not loaded yet"
+msgstr "Ещё не загружено"
+
+msgid "No Pinterest accounts yet"
+msgstr "Аккаунтов Pinterest пока нет"
+
+msgid "All accounts"
+msgstr "Все аккаунты"
+
+msgid "updated"
+msgstr "обновлено"
+
+msgid "Statistics have not been loaded yet"
+msgstr "Статистика ещё не загружалась"
+
+msgid "Account settings"
+msgstr "Настройки аккаунта"
+
+msgid "Refresh now"
+msgstr "Обновить сейчас"
+
+msgid "The last refresh failed:"
+msgstr "Последнее обновление не удалось:"
+
+msgid "Pinterest is still processing part of this data; the numbers may change."
+msgstr "Pinterest ещё обрабатывает часть данных, цифры могут измениться."
+
+msgid "No data for the previous period"
+msgstr "Нет данных за прошлый период"
+
+msgid "No data yet"
+msgstr "Данных пока нет"
+
+msgid "History"
+msgstr "История"
+
+msgid "Each row is a %(days)s-day total at the time of the refresh"
+msgstr "Каждая строка — сумма за %(days)s дней на момент обновления"
+
+msgid "Period"
+msgstr "Период"
+
+msgid "No snapshots yet. They appear after the next publication or after pressing “Refresh now”."
+msgstr "Снимков пока нет. Они появятся после следующей публикации или после нажатия «Обновить сейчас»."
+
+msgid "Impressions, 30 days"
+msgstr "Показы за 30 дней"
+
+msgid "saves"
+msgstr "сохранений"
+
+msgid "Statistics could not be loaded for %(counter)s account. See the table below."
+msgid_plural "Statistics could not be loaded for %(counter)s accounts. See the table below."
+msgstr[0] "Не удалось загрузить статистику для %(counter)s аккаунта. Подробности в таблице ниже."
+msgstr[1] "Не удалось загрузить статистику для %(counter)s аккаунтов. Подробности в таблице ниже."
+msgstr[2] "Не удалось загрузить статистику для %(counter)s аккаунтов. Подробности в таблице ниже."
+
+msgid "%(counter)s account"
+msgid_plural "%(counter)s accounts"
+msgstr[0] "%(counter)s аккаунт"
+msgstr[1] "%(counter)s аккаунта"
+msgstr[2] "%(counter)s аккаунтов"
+
+msgid "Statistics refresh started for {} account(s). Reload the page in a few minutes."
+msgstr "Обновление статистики запущено для аккаунтов: {}. Обновите страницу через несколько минут."
+
+msgid "Could not load statistics: {}"
+msgstr "Не удалось загрузить статистику: {}"
+
+msgid "Could not load statistics because of an unexpected error. See the server log."
+msgstr "Не удалось загрузить статистику из-за непредвиденной ошибки. Смотрите лог сервера."
+
+msgid "Statistics updated: {impressions} impressions, {saves} saves."
+msgstr "Статистика обновлена: показов — {impressions}, сохранений — {saves}."
+
+msgid "Refresh all"
+msgstr "Обновить все"
+
+msgid "Loading…"
+msgstr "Загрузка…"

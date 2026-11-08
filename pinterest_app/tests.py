@@ -1442,3 +1442,349 @@ class PinPublishTaskTests(TestCase):
         self.assertEqual(create_pin_mock.call_count, 1)
         self.assertEqual(task.status, "FAILED")
         self.assertEqual(task.error_json["error"], "publish_unknown")
+
+
+SUMMARY_RESPONSE = {
+    "data": {
+        "v3AnalyticsMetricsDeltasQuery": {
+            "__typename": "AnalyticsSummaryMetricsResponse",
+            "data": {
+                "numOfDays": 31,
+                "summaryMetrics": {
+                    "impressionFloat": 125731.0,
+                    "engagementFloat": 4779.0,
+                    "outboundClickFloat": 1.0,
+                    "saveFloat": 1439.0,
+                },
+                "deltas": {
+                    "impression": -0.2414,
+                    "engagement": -0.2481,
+                    "outboundClick": None,
+                    "save": -0.288,
+                },
+                "dateAvailability": {
+                    "impression": {"isRealtime": True, "summaryDataStatus": "READY"},
+                    "engagement": {"summaryDataStatus": "READY"},
+                    "outboundClick": {"summaryDataStatus": "READY"},
+                    "save": {"summaryDataStatus": "READY"},
+                },
+            },
+        }
+    }
+}
+
+
+def _json_response(payload, status_code=200):
+    response = Mock()
+    response.status_code = status_code
+    response.json.return_value = payload
+    return response
+
+
+class AccountStatsTests(TestCase):
+    def setUp(self):
+        from datetime import date
+
+        self.today = date(2026, 11, 8)
+        self.user = User.objects.create_user(username="stats-user", password="pw")
+        self.account = PinterestAccount.objects.create(
+            user=self.user,
+            name="stats_account",
+            cookies=[{"name": "csrftoken", "value": "csrf"}],
+            proxy="http://proxy.example.com:8080",
+        )
+
+    def _session(self, *responses):
+        session = Mock()
+        session.request.side_effect = list(responses)
+        return session
+
+    def _refresh(self, session):
+        from pinterest_app.analytics import refresh_account_stats
+
+        with patch(
+            "pinterest_app.analytics.get_session_and_csrf",
+            return_value=(session, "csrf", "www.pinterest.com"),
+        ):
+            return refresh_account_stats(self.account, today=self.today)
+
+    def test_period_and_variables_match_the_analytics_ui(self):
+        from datetime import date
+        from pinterest_app.analytics import build_summary_variables, stats_period
+
+        start, end = stats_period(self.today)
+        self.assertEqual((start, end), (date(2026, 10, 7), date(2026, 11, 6)))
+        variables = build_summary_variables("1121326144629908734", start, end)
+        self.assertEqual(variables["startTimestamp"], 1791331200)
+        self.assertEqual(variables["endTimestamp"], 1794009599)
+        self.assertEqual(variables["startDate"], "2026-10-07")
+        self.assertEqual(variables["endDate"], "2026-11-06")
+
+    def test_parse_summary_response(self):
+        from pinterest_app.analytics import parse_summary_response
+
+        values = parse_summary_response(SUMMARY_RESPONSE)
+        self.assertEqual(values["impressions"], 125731)
+        self.assertEqual(values["engagements"], 4779)
+        self.assertEqual(values["outbound_clicks"], 1)
+        self.assertEqual(values["saves"], 1439)
+        self.assertAlmostEqual(values["impressions_delta"], -0.2414)
+        self.assertIsNone(values["outbound_clicks_delta"])
+        self.assertTrue(values["is_complete"])
+
+    def test_refresh_resolves_user_id_once_and_stores_snapshot(self):
+        import json as json_module
+
+        user_response = _json_response(
+            {"resource_response": {"data": {"id": "1121326144629908734"}}}
+        )
+        session = self._session(user_response, _json_response(SUMMARY_RESPONSE))
+        snapshot = self._refresh(session)
+
+        self.account.refresh_from_db()
+        self.assertEqual(self.account.pinterest_user_id, "1121326144629908734")
+        self.assertEqual(snapshot.impressions, 125731)
+        self.assertEqual(str(snapshot.period_end), "2026-11-06")
+        graphql_call = session.request.call_args_list[1].kwargs
+        body = json_module.loads(graphql_call["data"])
+        self.assertEqual(body["variables"]["user"], "1121326144629908734")
+        self.assertEqual(graphql_call["headers"]["x-csrftoken"], "csrf")
+
+        # The id is cached: the next refresh makes only the analytics request.
+        session = self._session(_json_response(SUMMARY_RESPONSE))
+        self._refresh(session)
+        self.assertEqual(session.request.call_count, 1)
+        self.assertEqual(self.account.stats_snapshots.count(), 2)
+
+    def test_user_id_comes_from_the_logged_in_session(self):
+        user_response = _json_response(
+            {
+                "client_context": {"user": {"id": "1099793308911756505"}},
+                "resource_response": {"data": {"id": "999"}},
+            }
+        )
+        session = self._session(user_response, _json_response(SUMMARY_RESPONSE))
+        self._refresh(session)
+
+        self.account.refresh_from_db()
+        self.assertEqual(self.account.pinterest_user_id, "1099793308911756505")
+        session.cookies.set.assert_called_once_with(
+            "csrftoken", "csrf", domain="analytics.pinterest.com", path="/"
+        )
+        profile_call = session.request.call_args_list[0].kwargs
+        self.assertEqual(profile_call["headers"]["x-pinterest-pws-handler"], "www/[username].js")
+
+    def test_failed_refresh_records_error_without_deactivating(self):
+        self.account.pinterest_user_id = "1"
+        self.account.save()
+        session = self._session(
+            _json_response({"errors": [{"message": "PersistedQueryNotFound"}]})
+        )
+        with self.assertRaises(PinterestServiceError):
+            self._refresh(session)
+
+        self.account.refresh_from_db()
+        self.assertTrue(self.account.is_active)
+        self.assertIn("query hash", self.account.stats_error)
+        self.assertFalse(self.account.stats_snapshots.exists())
+
+    def test_successful_refresh_clears_previous_error(self):
+        self.account.pinterest_user_id = "1"
+        self.account.stats_error = "old error"
+        self.account.save()
+        self._refresh(self._session(_json_response(SUMMARY_RESPONSE)))
+        self.account.refresh_from_db()
+        self.assertEqual(self.account.stats_error, "")
+
+    def test_refresh_requests_are_limited_to_one_per_hour(self):
+        from pinterest_app.analytics import request_stats_refresh
+
+        with patch("pinterest_app.tasks.refresh_account_stats_task.delay") as delay_mock:
+            with self.captureOnCommitCallbacks(execute=True):
+                self.assertTrue(request_stats_refresh(self.account))
+                self.assertFalse(request_stats_refresh(self.account))
+            PinterestAccount.objects.filter(pk=self.account.pk).update(
+                stats_requested_at=timezone.now() - timedelta(minutes=61)
+            )
+            with self.captureOnCommitCallbacks(execute=True):
+                self.assertTrue(request_stats_refresh(self.account))
+                self.assertTrue(request_stats_refresh(self.account, force=True))
+        self.assertEqual(delay_mock.call_count, 3)
+
+    def test_queue_failure_allows_the_next_request(self):
+        from pinterest_app.analytics import request_stats_refresh
+
+        with patch(
+            "pinterest_app.tasks.refresh_account_stats_task.delay",
+            side_effect=ConnectionError("redis down"),
+        ):
+            with self.captureOnCommitCallbacks(execute=True):
+                request_stats_refresh(self.account)
+        self.account.refresh_from_db()
+        self.assertIsNone(self.account.stats_requested_at)
+
+    def test_successful_publish_requests_stats_refresh(self):
+        PinterestBoard.objects.create(
+            account=self.account, board_id="b1", name="Board", url="/b/"
+        )
+        task = PinPublishTask.objects.create(
+            account=self.account, image_url="https://image.example/i.jpg", board_id="b1"
+        )
+        response = Mock(status_code=200, headers={}, content=b"{}")
+        response.json.return_value = {"resource_response": {"data": {"id": "pin"}}}
+        with patch("pinterest_app.services.check_proxy"), patch(
+            "pinterest_app.services.create_pin", return_value=response
+        ), patch("pinterest_app.analytics.request_stats_refresh") as request_mock:
+            publish_pin_for_task(task)
+
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS")
+        request_mock.assert_called_once()
+
+    def test_failed_publish_does_not_request_stats_refresh(self):
+        task = PinPublishTask.objects.create(
+            account=self.account, image_url="https://image.example/i.jpg", board_id="b1"
+        )
+        with patch(
+            "pinterest_app.services.check_proxy",
+            side_effect=PinterestServiceError("auth_error", "denied"),
+        ), patch("pinterest_app.analytics.request_stats_refresh") as request_mock:
+            publish_pin_for_task(task)
+        request_mock.assert_not_called()
+
+    def test_renaming_account_resets_user_id(self):
+        self.account.pinterest_user_id = "123"
+        self.account.save()
+        account = PinterestAccount.objects.get(pk=self.account.pk)
+        account.name = "new_name"
+        account.save()
+        account.refresh_from_db()
+        self.assertEqual(account.pinterest_user_id, "")
+
+
+class AccountStatsAdminTests(TestCase):
+    def setUp(self):
+        from datetime import date
+        from pinterest_app.models import AccountStatsSnapshot
+
+        self.admin_user = User.objects.create_superuser(username="stats-admin", password="pw")
+        self.owner = User.objects.create_user(username="owner", password="pw", is_staff=True)
+        self.other = User.objects.create_user(username="other", password="pw")
+        self.account = PinterestAccount.objects.create(
+            user=self.owner, name="mine", cookies=[], proxy="http://p:1"
+        )
+        self.foreign = PinterestAccount.objects.create(
+            user=self.other, name="foreign", cookies=[], proxy="http://p:1"
+        )
+        for account, impressions, delta in (
+            (self.account, 1000, 0.25),
+            (self.foreign, 3000, -0.5),
+        ):
+            AccountStatsSnapshot.objects.create(
+                account=account,
+                period_start=date(2026, 10, 7),
+                period_end=date(2026, 11, 6),
+                impressions=impressions,
+                engagements=10,
+                outbound_clicks=0,
+                saves=5,
+                impressions_delta=delta,
+            )
+
+    def _url(self, account=None):
+        from django.urls import reverse
+
+        if account is None:
+            return reverse("admin:pinterest_app_accountstatistics_changelist")
+        return reverse("admin:pinterest_app_accountstatistics_change", args=[account.pk])
+
+    def test_overview_shows_totals_for_all_accounts(self):
+        client = Client()
+        client.force_login(self.admin_user)
+        response = client.get(self._url())
+
+        self.assertEqual(response.status_code, 200)
+        stats = response.context["stats"]
+        self.assertEqual([row["account"].name for row in stats["rows"]], ["foreign", "mine"])
+        impressions = stats["totals"][0]
+        self.assertEqual(impressions["value"], "4 000")
+        # Previous periods: 1000 / 1.25 + 3000 / 0.5 = 6800 -> 4000 / 6800 - 1.
+        self.assertEqual(impressions["delta"]["text"], "-41.2%")
+        self.assertContains(response, self._url(self.account))
+
+    def test_staff_user_sees_only_own_accounts(self):
+        from django.contrib.auth.models import Permission
+
+        self.owner.user_permissions.add(
+            Permission.objects.get(codename="view_pinterestaccount")
+        )
+        client = Client()
+        client.force_login(self.owner)
+        response = client.get(self._url())
+        self.assertEqual(
+            [row["account"].name for row in response.context["stats"]["rows"]], ["mine"]
+        )
+        self.assertEqual(client.get(self._url(self.foreign)).status_code, 404)
+        # View permission alone does not allow queuing a refresh.
+        self.assertEqual(client.post(self._url(self.account)).status_code, 403)
+
+    def test_user_without_account_permission_is_denied(self):
+        client = Client()
+        client.force_login(self.owner)
+        self.assertEqual(client.get(self._url()).status_code, 403)
+
+    def test_detail_page_and_manual_refresh(self):
+        client = Client()
+        client.force_login(self.admin_user)
+        url = self._url(self.account)
+        response = client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["stats"]["metrics"][0]["delta"]["text"], "+25%")
+        self.assertEqual(len(response.context["stats"]["history"]), 1)
+
+        snapshot = self.account.stats_snapshots.get()
+        with patch("pinterest_app.admin.refresh_account_stats", return_value=snapshot) as refresh_mock:
+            response = client.post(url, follow=True)
+        refresh_mock.assert_called_once_with(self.account)
+        self.assertContains(response, "1 000")
+        self.account.refresh_from_db()
+        # A manual refresh counts as the hourly one.
+        self.assertIsNotNone(self.account.stats_requested_at)
+
+    def test_manual_refresh_shows_pinterest_error(self):
+        client = Client()
+        client.force_login(self.admin_user)
+        with patch(
+            "pinterest_app.admin.refresh_account_stats",
+            side_effect=PinterestServiceError("api_error", "Pinterest Analytics returned HTTP 418."),
+        ):
+            response = client.post(self._url(self.account), follow=True)
+        self.assertContains(response, "Pinterest Analytics returned HTTP 418.")
+
+    def test_refresh_all_queues_active_accounts(self):
+        PinterestAccount.objects.filter(pk=self.foreign.pk).update(is_active=False)
+        client = Client()
+        client.force_login(self.admin_user)
+        with patch("pinterest_app.admin.request_stats_refresh", return_value=True) as request_mock:
+            response = client.post(self._url())
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual([c.args[0] for c in request_mock.call_args_list], [self.account])
+        self.assertTrue(request_mock.call_args.kwargs["force"])
+
+    def test_account_list_links_to_statistics(self):
+        from django.urls import reverse
+
+        client = Client()
+        client.force_login(self.admin_user)
+        response = client.get(reverse("admin:pinterest_app_pinterestaccount_changelist"))
+        self.assertContains(response, self._url(self.account))
+
+    def test_main_dashboard_shows_statistics_tile(self):
+        from django.urls import reverse
+
+        client = Client()
+        client.force_login(self.admin_user)
+        response = client.get(reverse("admin:index"))
+        self.assertEqual(
+            response.context["dashboard"]["statistics"]["impressions"], "4 000"
+        )

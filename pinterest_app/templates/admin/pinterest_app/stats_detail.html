@@ -1,0 +1,105 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {{ site_title|default:_("Django site admin") }}{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+{% include "admin/pinterest_app/_dash_styles.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="pap-dash">
+    <header class="pap-head">
+        <div>
+            <a class="pap-back" href="{{ stats.overview_url }}"><span class="material-symbols-outlined">arrow_back</span>{% translate "All accounts" %}</a>
+            <h1>{{ stats.account.name }}</h1>
+            <p>
+                {% if stats.latest %}
+                {% blocktranslate with days=stats.period_days start=stats.latest.period_start|date:"j E" end=stats.latest.period_end|date:"j E Y" %}Last {{ days }} days · {{ start }} – {{ end }}{% endblocktranslate %}
+                · {% translate "updated" %} {{ stats.latest.created_at|date:"d.m.Y H:i" }}
+                {% else %}
+                {% translate "Statistics have not been loaded yet" %}
+                {% endif %}
+            </p>
+        </div>
+        <div class="pap-actions">
+            <a class="pap-btn pap-btn--ghost" href="{{ stats.account_url }}"><span class="material-symbols-outlined">settings</span>{% translate "Account settings" %}</a>
+            {% if can_refresh %}
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="pap-btn" onclick="this.disabled=true;this.form.submit();this.lastChild.textContent=' {{ _("Loading…")|escapejs }}'"><span class="material-symbols-outlined">refresh</span>{% translate "Refresh now" %}</button>
+            </form>
+            {% endif %}
+        </div>
+    </header>
+
+    {% if stats.error %}
+    <div class="pap-notice pap-notice--critical pap-notice--standalone">
+        <span class="material-symbols-outlined">error</span>
+        <span>{% translate "The last refresh failed:" %} {{ stats.error }}</span>
+    </div>
+    {% endif %}
+    {% if stats.latest and not stats.latest.is_complete %}
+    <div class="pap-notice pap-notice--standalone">
+        <span class="material-symbols-outlined">hourglass_top</span>
+        <span>{% translate "Pinterest is still processing part of this data; the numbers may change." %}</span>
+    </div>
+    {% endif %}
+
+    <section class="pap-kpis" aria-label="{% translate 'Key metrics' %}">
+        {% for metric in stats.metrics %}
+        <div class="pap-card pap-tile">
+            <span class="pap-tile__label"><span class="material-symbols-outlined">{{ metric.icon }}</span>{{ metric.label }}</span>
+            <span class="pap-tile__value">{{ metric.value }}</span>
+            <span class="pap-tile__meta">
+                {% if metric.delta %}<span class="pap-delta pap-delta--{{ metric.delta.tone }}">{{ metric.delta.text }}</span><span>{% translate "vs previous period" %}</span>
+                {% elif stats.latest %}<span>{% translate "No data for the previous period" %}</span>
+                {% else %}<span>{% translate "No data yet" %}</span>{% endif %}
+            </span>
+        </div>
+        {% endfor %}
+    </section>
+
+    <section class="pap-card">
+        <div class="pap-section__head">
+            <h2>{% translate "History" %}</h2>
+            <small>{% blocktranslate with days=stats.period_days %}Each row is a {{ days }}-day total at the time of the refresh{% endblocktranslate %}</small>
+        </div>
+        {% if stats.history %}
+        <div class="pap-table-wrap">
+            <table class="pap-table">
+                <thead>
+                    <tr>
+                        <th>{% translate "Updated" %}</th>
+                        <th>{% translate "Period" %}</th>
+                        {% for metric in stats.metrics %}<th class="pap-right">{{ metric.label }}</th>{% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in stats.history %}
+                    <tr>
+                        <td class="pap-num">{{ row.snapshot.created_at|date:"d.m.Y H:i" }}</td>
+                        <td class="pap-num">{{ row.snapshot.period_start|date:"d.m" }} – {{ row.snapshot.period_end|date:"d.m.Y" }}</td>
+                        {% for metric in row.metrics %}
+                        <td class="pap-right">
+                            <span class="pap-cell-num">{{ metric.value }}</span>
+                            {% if metric.delta %} <span class="pap-delta pap-delta--{{ metric.delta.tone }}">{{ metric.delta.text }}</span>{% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="pap-empty">
+            <span class="material-symbols-outlined">monitoring</span>
+            {% translate "No snapshots yet. They appear after the next publication or after pressing “Refresh now”." %}
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

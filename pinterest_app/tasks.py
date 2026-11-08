@@ -47,6 +47,32 @@ def refresh_all_accounts_boards_task(account_ids: Sequence[int] | None = None):
 
 
 @shared_task(ignore_result=True)
+def refresh_account_stats_task(account_id):
+    from .analytics import refresh_account_stats
+
+    try:
+        account = PinterestAccount.objects.get(id=account_id)
+    except PinterestAccount.DoesNotExist:
+        logger.warning("Statistics refresh skipped: account %s was not found.", account_id)
+        return
+    try:
+        refresh_account_stats(account)
+    except PinterestServiceError:
+        pass  # Already logged and stored on the account.
+    except Exception:
+        logger.exception("Unexpected statistics refresh error for account %s.", account_id)
+
+
+@shared_task(ignore_result=True)
+def refresh_all_accounts_stats_task():
+    """Daily refresh, so accounts that did not publish still have fresh numbers."""
+    from .analytics import request_stats_refresh
+
+    for account in PinterestAccount.objects.filter(is_active=True):
+        request_stats_refresh(account)
+
+
+@shared_task(ignore_result=True)
 def record_beat_heartbeat_task():
     """Scheduled by Celery beat every minute; the monitor checks its freshness."""
     try:

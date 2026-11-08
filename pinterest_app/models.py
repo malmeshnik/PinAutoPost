@@ -10,11 +10,34 @@ class PinterestAccount(models.Model):
     proxy = models.CharField(_("Proxy"), max_length=512, help_text=_("Format: http://username:password@ip:port or socks5://..."))
     is_active = models.BooleanField(_("Is active"), default=True)
     webhook_token = models.UUIDField(_("Webhook token"), default=uuid.uuid4, unique=True, editable=False)
+    # Numeric Pinterest user id, resolved from the username once; the
+    # analytics API addresses accounts by it.
+    pinterest_user_id = models.CharField(_("Pinterest user ID"), max_length=64, blank=True, default="", editable=False)
+    # Set when a statistics refresh is queued; limits refreshes to one per hour.
+    stats_requested_at = models.DateTimeField(_("Statistics requested at"), blank=True, null=True, editable=False)
+    stats_error = models.CharField(_("Statistics error"), max_length=255, blank=True, default="", editable=False)
     created_at = models.DateTimeField(_("Created at"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated at"), auto_now=True)
 
     def __str__(self):
         return f"{self.name} ({self.user.username})"
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        instance._loaded_name = instance.__dict__.get("name")
+        return instance
+
+    def save(self, *args, **kwargs):
+        # The user id belongs to the username; a renamed account resolves it again.
+        loaded_name = getattr(self, "_loaded_name", None)
+        if loaded_name is not None and self.name != loaded_name:
+            self.pinterest_user_id = ""
+            update_fields = kwargs.get("update_fields")
+            if update_fields is not None and "name" in update_fields:
+                kwargs["update_fields"] = {*update_fields, "pinterest_user_id"}
+        super().save(*args, **kwargs)
+        self._loaded_name = self.name
 
     class Meta:
         verbose_name = _("Pinterest Account")
@@ -90,3 +113,45 @@ class SystemAlertState(models.Model):
 
     def __str__(self):
         return self.key
+
+
+class AccountStatsSnapshot(models.Model):
+    """Account totals over a rolling period, as Pinterest Analytics showed them."""
+
+    account = models.ForeignKey(
+        PinterestAccount, on_delete=models.CASCADE, related_name="stats_snapshots",
+        verbose_name=_("Account"),
+    )
+    period_start = models.DateField(_("Period start"))
+    period_end = models.DateField(_("Period end"))
+    impressions = models.BigIntegerField(_("Impressions"), default=0)
+    engagements = models.BigIntegerField(_("Engagements"), default=0)
+    outbound_clicks = models.BigIntegerField(_("Outbound clicks"), default=0)
+    saves = models.BigIntegerField(_("Saves"), default=0)
+    # Change against the previous period of the same length, as a fraction
+    # (-0.24 means -24%). Empty when the previous period had no data.
+    impressions_delta = models.FloatField(_("Impressions change"), blank=True, null=True)
+    engagements_delta = models.FloatField(_("Engagements change"), blank=True, null=True)
+    outbound_clicks_delta = models.FloatField(_("Outbound clicks change"), blank=True, null=True)
+    saves_delta = models.FloatField(_("Saves change"), blank=True, null=True)
+    # False while Pinterest is still computing some of the metrics.
+    is_complete = models.BooleanField(_("Data complete"), default=True)
+    created_at = models.DateTimeField(_("Created at"), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("Statistics snapshot")
+        verbose_name_plural = _("Statistics snapshots")
+        ordering = ("-created_at",)
+        indexes = [models.Index(fields=("account", "-created_at"), name="stats_account_created_idx")]
+
+    def __str__(self):
+        return f"{self.account.name} {self.period_start}..{self.period_end}"
+
+
+class AccountStatistics(PinterestAccount):
+    """Admin entry point for the statistics pages; stores nothing of its own."""
+
+    class Meta:
+        proxy = True
+        verbose_name = _("Account statistics")
+        verbose_name_plural = _("Account statistics")

@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from pinterest_app.models import PinterestAccount, PinPublishTask
+from pinterest_app.stats_dashboard import format_number, latest_snapshots
 from pinterest_app.monitoring import (
     get_health_snapshot,
     get_recent_publish_failures,
@@ -101,6 +102,14 @@ def dashboard_callback(request, context):
         {"label": _("Other"), "code": "", "count": other_errors, "tone": "neutral"}
     )
 
+    snapshots = latest_snapshots(accounts).values()
+    statistics = {
+        "impressions": format_number(sum(s.impressions for s in snapshots)),
+        "saves": format_number(sum(s.saves for s in snapshots)),
+        "accounts": len(snapshots),
+        "url": reverse("admin:pinterest_app_accountstatistics_changelist"),
+    }
+
     snapshot = get_health_snapshot() if request.user.is_superuser else None
     health = _health_components(snapshot) if snapshot else []
     health_issues = sum(1 for c in health if c["state"] == "issue")
@@ -128,6 +137,7 @@ def dashboard_callback(request, context):
                     "url": f"{tasks_url}?status__exact=FAILED",
                     "success_url": f"{tasks_url}?status__exact=SUCCESS",
                 },
+                "statistics": statistics,
                 "issues": issues,
                 "issues_total": task_counts["failed_today"],
                 "health": health,

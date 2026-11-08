@@ -1,0 +1,96 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {{ site_title|default:_("Django site admin") }}{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+{% include "admin/pinterest_app/_dash_styles.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="pap-dash">
+    <header class="pap-head">
+        <div>
+            <h1>{% translate "Account statistics" %}</h1>
+            <p>{% blocktranslate with days=stats.period_days start=stats.period_start|date:"j E" end=stats.period_end|date:"j E Y" %}Last {{ days }} days · {{ start }} – {{ end }}{% endblocktranslate %}</p>
+        </div>
+        <div class="pap-actions">
+            <span class="pap-pill pap-pill--good"><span class="material-symbols-outlined">monitoring</span>{% blocktranslate with loaded=stats.accounts_with_stats total=stats.accounts_total %}{{ loaded }} of {{ total }} accounts loaded{% endblocktranslate %}</span>
+            {% if can_refresh and stats.accounts_total %}
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="pap-btn"><span class="material-symbols-outlined">refresh</span>{% translate "Refresh all" %}</button>
+            </form>
+            {% endif %}
+        </div>
+    </header>
+
+    <section class="pap-kpis" aria-label="{% translate 'Totals for all accounts' %}">
+        {% for metric in stats.totals %}
+        <div class="pap-card pap-tile">
+            <span class="pap-tile__label"><span class="material-symbols-outlined">{{ metric.icon }}</span>{{ metric.label }}</span>
+            <span class="pap-tile__value">{{ metric.value }}</span>
+            <span class="pap-tile__meta">
+                {% if metric.delta %}<span class="pap-delta pap-delta--{{ metric.delta.tone }}">{{ metric.delta.text }}</span><span>{% translate "vs previous period" %}</span>
+                {% else %}<span>{% translate "No comparison yet" %}</span>{% endif %}
+            </span>
+        </div>
+        {% endfor %}
+    </section>
+
+    {% if stats.accounts_with_errors %}
+    <div class="pap-notice pap-notice--critical pap-notice--standalone">
+        <span class="material-symbols-outlined">error</span>
+        <span>{% blocktranslate count counter=stats.accounts_with_errors %}Statistics could not be loaded for {{ counter }} account. See the table below.{% plural %}Statistics could not be loaded for {{ counter }} accounts. See the table below.{% endblocktranslate %}</span>
+    </div>
+    {% endif %}
+
+    <section class="pap-card">
+        <div class="pap-section__head">
+            <h2>{% translate "By account" %}</h2>
+            <small>{% translate "Updated after each publication, at most once per hour, and daily" %}</small>
+        </div>
+        {% if stats.rows %}
+        <div class="pap-table-wrap">
+            <table class="pap-table">
+                <thead>
+                    <tr>
+                        <th>{% translate "Account" %}</th>
+                        {% for metric in stats.totals %}<th class="pap-right">{{ metric.label }}</th>{% endfor %}
+                        <th>{% translate "Updated" %}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in stats.rows %}
+                    <tr>
+                        <td class="pap-strong">
+                            {{ row.account.name }}
+                            {% if not row.account.is_active %}<div class="pap-muted" style="font-size:12px">{% translate "inactive" %}</div>{% endif %}
+                            {% if row.error %}<div class="pap-error-text" title="{{ row.error }}">{{ row.error|truncatechars:70 }}</div>{% endif %}
+                        </td>
+                        {% for metric in row.metrics %}
+                        <td class="pap-right">
+                            <div class="pap-cell-num">{{ metric.value }}</div>
+                            {% if metric.delta %}<div class="pap-cell-sub"><span class="pap-delta pap-delta--{{ metric.delta.tone }}">{{ metric.delta.text }}</span></div>{% endif %}
+                        </td>
+                        {% endfor %}
+                        <td class="pap-num">{% if row.snapshot %}{{ row.snapshot.created_at|date:"d.m H:i" }}{% else %}{% translate "Not loaded yet" %}{% endif %}</td>
+                        <td class="pap-right"><a class="pap-btn pap-btn--ghost pap-btn--sm" href="{{ row.url }}">{% translate "Details" %} →</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="pap-empty">
+            <span class="material-symbols-outlined">group_off</span>
+            {% translate "No Pinterest accounts yet" %}
+        </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

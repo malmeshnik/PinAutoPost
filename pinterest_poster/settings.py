@@ -143,6 +143,14 @@ REST_FRAMEWORK = {
     },
 }
 
+# Persisted GraphQL query of the analytics "topline metrics" block. When
+# Pinterest updates its frontend the hash may change: copy the new one from
+# the browser (DevTools -> Network -> analytics.pinterest.com/_/graphql/).
+PINTEREST_ANALYTICS_SUMMARY_QUERY_HASH = os.getenv(
+    'PINTEREST_ANALYTICS_SUMMARY_QUERY_HASH',
+    'd8f0da0b5971929b105a0d3b86e1e837f8e12434bf4ecc0efae3859d2d21da6a',
+)
+
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_ADMIN_CHAT_ID = os.getenv('TELEGRAM_ADMIN_CHAT_ID')
 
@@ -161,6 +169,10 @@ CELERY_BEAT_SCHEDULE = {
     'refresh-boards-daily': {
         'task': 'pinterest_app.tasks.refresh_all_accounts_boards_task',
         'schedule': crontab(hour=0, minute=0),
+    },
+    'refresh-account-stats-daily': {
+        'task': 'pinterest_app.tasks.refresh_all_accounts_stats_task',
+        'schedule': crontab(hour=1, minute=0),
     },
     # The health monitor itself runs as `manage.py monitor_system_health`.
     'celery-beat-heartbeat': {
